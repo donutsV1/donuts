@@ -69,11 +69,8 @@ body {
 }
 
 /* === Images === */
-.mincrafte, .nms {
-  display: block;
-  margin: 10px auto;
-  width: 140px;
-  height: 200px;
+.mincrafte.nms{
+  width: 162px;
+  height: 232px;
   border-radius: 10px;
-  object-fit: cover;
 }
