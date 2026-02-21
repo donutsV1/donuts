@@ -1,3 +1,23 @@
+* {
+  max-width: 100%;
+}
+
+/* Les images s'adaptent automatiquement */
+img {
+  width: 100%;
+  height: auto;
+}
+
+/* Le texte s'adapte aussi */
+body {
+  font-size: 16px;
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+}
 /* === Thèmes === */
 [data-theme="clair"] {
   --background-color: #f5f5f5;
