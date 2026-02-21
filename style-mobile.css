@@ -18,6 +18,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  max-width: 100%;
 }
 
 /* === Body === */
@@ -42,43 +43,37 @@ body {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
+  z-index: 10;
 }
 
-#toggleMode:hover {
-  opacity: 0.8;
-} 
-
+/* === Titre === */
 #bonjour {
-  font-size: 30px;
-  position: absolute;
-  top: 150px;
-  left: 469px;
-  font-family: Times New Roman;
+  font-size: 22px;
+  font-family: 'Times New Roman', serif;
+  text-align: center;
+  margin-top: 80px;
+  margin-bottom: 20px;
+  padding: 0 20px;
 }
 
+/* === Texte === */
 #moi {
-  font-size: 20px;
-  position: absolute;
-  top: 215px;
-  left: 230px;
+  padding: 0 20px;
+  margin-bottom: 30px;
 }
 
-.mincrafte {
-  position: absolute;
-  top: 310px;
-  left: 50px;
-  width: 162px;        
-  height: 232px;       
-  border-radius: 10px; 
-  object-fit: cover;
+#moi p {
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.6;
 }
 
-.nms {
-  position: absolute;
-  top: 310px;
-  left: 300px;
-  width: 162px;        
-  height: 232px;       
-  border-radius: 10px; 
+/* === Images === */
+.mincrafte, .nms {
+  display: block;
+  margin: 10px auto;
+  width: 140px;
+  height: 200px;
+  border-radius: 10px;
   object-fit: cover;
 }
