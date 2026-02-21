@@ -50,27 +50,26 @@ body {
   opacity: 0.8;
 }
 
-/* === Contenu principal === */
-#container {
-  padding: 80px 20px 40px 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
 /* === Titre === */
 #bonjour {
   font-size: 30px;
   font-family: 'Times New Roman', serif;
   text-align: center;
+  margin-top: 80px;
   margin-bottom: 20px;
+  padding: 0 20px;
 }
 
 /* === Texte === */
+#moi {
+  padding: 0 20px;
+  margin-bottom: 30px;
+}
+
 #moi p {
   font-size: 18px;
   text-align: center;
   line-height: 1.6;
-  margin-bottom: 30px;
 }
 
 /* === Images === */
@@ -79,9 +78,10 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
+  padding: 0 20px;
 }
 
-.jeu {
+.mincrafte, .nms {
   width: 162px;
   height: 232px;
   border-radius: 10px;
@@ -92,13 +92,14 @@ body {
 @media (max-width: 600px) {
   #bonjour {
     font-size: 22px;
+    margin-top: 70px;
   }
 
   #moi p {
     font-size: 15px;
   }
 
-  .jeu {
+  .mincrafte, .nms {
     width: 140px;
     height: 200px;
   }
