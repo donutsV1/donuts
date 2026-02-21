@@ -22,15 +22,17 @@
 
 /* === Body === */
 body {
+  margin: 1rem;
   background-color: var(--background-color);
   color: var(--text-color);
-  font-family: Georgia, serif;
+  font-family: 'Consolas', Courier, monospace ;
   transition: background-color 0.3s, color 0.3s;
   min-height: 100vh;
+  
 }
 
 /* === Bouton === */
-#toggleMode {
+.btn-black {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -49,36 +51,39 @@ body {
 } 
 
 #bonjour {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
   font-size: 30px;
-  position: absolute;
-  top: 150px;
-  left: 469px;
-  font-family: Times New Roman;
+  
 }
 
 #moi {
   font-size: 20px;
-  position: absolute;
-  top: 215px;
-  left: 230px;
+  text-align: center;
 }
 
-.mincrafte {
-  position: absolute;
-  top: 310px;
-  left: 50px;
-  width: 162px;        
-  height: 232px;       
-  border-radius: 10px; 
+.images1{
+  text-align: center;
+  border-radius: 10px;
+  
+}
+.images1 .mincrafte,
+.images1 .nms {
+  width: 162px;
+  height: 232px;
+  border-radius: 20px;
   object-fit: cover;
 }
-
-.nms {
-  position: absolute;
-  top: 310px;
-  left: 300px;
-  width: 162px;        
-  height: 232px;       
-  border-radius: 10px; 
+.images1 .apex {
+  width: 220px;
+  height: 232px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.images1 .vrc{
+  width: 200px;
+  height: 155px;
+  border-radius: 10px;
   object-fit: cover;
 }
