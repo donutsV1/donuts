@@ -46,31 +46,40 @@ body {
   z-index: 10;
 }
 
-/* === Titre === */
 #bonjour {
-  font-size: 22px;
-  font-family: 'Times New Roman', serif;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   text-align: center;
-  margin-top: 80px;
-  margin-bottom: 20px;
-  padding: 0 20px;
+  font-size: 30px;
+  
 }
 
-/* === Texte === */
 #moi {
-  padding: 0 20px;
-  margin-bottom: 30px;
-}
-
-#moi p {
-  font-size: 15px;
+  font-size: 20px;
   text-align: center;
-  line-height: 1.6;
 }
 
-/* === Images === */
-.mincrafte.nms{
+.images1{
+  text-align: center;
+  border-radius: 10px;
+  
+}
+.images1 .mincrafte,
+.images1 .nms {
   width: 162px;
   height: 232px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+.images1 .apex {
+  width: 220px;
+  height: 232px;
   border-radius: 10px;
+  object-fit: cover;
+}
+.images1 .vrc{
+  width: 200px;
+  height: 155px;
+  border-radius: 10px;
+  object-fit: cover;
 }
