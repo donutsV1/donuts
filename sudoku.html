@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Sudoku Aléatoire</title>
+    <style>
+        /* --- 1. CSS pour le style et la mise en page --- */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            display: flex;
+            gap: 40px; /* Espace entre la grille et le pavé numérique */
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Style de la grille --- */
+        #sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            width: 450px; /* Taille de la grille */
+            height: 450px;
+            border: 3px solid #000;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #bbb;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        /* Lignes et colonnes plus épaisses pour les blocs 3x3 */
+        .cell:nth-child(3n) { border-right: 3px solid #000; }
+        .cell:nth-child(9n) { border-right: 1px solid #bbb; } /* Réinitialiser la dernière colonne */
+        
+        .cell:nth-child(n) { }
+
+        /* Bordure inférieure épaisse pour chaque ligne de bloc */
+        .cell:nth-child(n):nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n):nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #000;
+        }
+
+        .cell:nth-child(n):nth-child(n+55):nth-child(-n+81) {
+             /* Pas de bordure épaisse pour les dernières lignes */
+        }
+
+
+        /* Pour la 3e et 6e ligne (indice dans la grille totale) */
+        .cell[data-row="2"], .cell[data-row="5"] {
+            border-bottom: 3px solid #000;
+        }
+        /* Correction: on ne peut pas utiliser nth-child efficacement avec les colonnes et les lignes */
+
+        .cell[data-col="2"], .cell[data-col="5"] {
+            border-right: 3px solid #000;
+        }
+
+
+        .prefilled {
+            background-color: #eee;
+            color: #333;
+            cursor: default;
+        }
+
+        .user-filled {
+            color: #00f; /* Chiffres entrés par le joueur en bleu */
+        }
+
+        .selected {
+            background-color: #a0c4ff !important;
+        }
+
+        /* --- Style du pavé numérique (Touchpad) --- */
+        #touchpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 150px;
+        }
+
+        .number-button {
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .number-button:hover {
+            background-color: #ccc;
+        }
+
+        #control-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #check-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #check-btn:hover {
+            background-color: #45a049;
+        }
+
+        #new-game-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        #new-game-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Bouton Effacer */
+        #clear-btn {
+            grid-column: span 3; /* Prend toute la largeur */
+            background-color: #ff9800;
+            color: white;
+            padding: 10px !important;
+        }
+        #clear-btn:hover { background-color: #fb8c00; }
+
+        /* Style pour les cellules mal placées (après vérification) */
+        .error {
+            background-color: #ffcccc !important;
+            color: #cc0000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Sudoku Challenge ! 🧠</h1>
+
+    <div id="game-container">
+        <div id="sudoku-grid">
+            </div>
+
+        <div id="controls">
+            <h2>Pavé Numérique</h2>
+            <div id="touchpad">
+                <button class="number-button" data-value="1">1</button>
+                <button class="number-button" data-value="2">2</button>
+                <button class="number-button" data-value="3">3</button>
+                <button class="number-button" data-value="4">4</button>
+                <button class="number-button" data-value="5">5</button>
+                <button class="number-button" data-value="6">6</button>
+                <button class="number-button" data-value="7">7</button>
+                <button class="number-button" data-value="8">8</button>
+                <button class="number-button" data-value="9">9</button>
+                <button class="number-button" id="clear-btn" data-value="0">Effacer</button>
+            </div>
+            
+            <div id="control-buttons">
+                <button id="check-btn" class="control-btn">Vérifier</button>
+                <button id="new-game-btn" class="control-btn">Nouvelle Partie</button>
+            </div>
+        </div>
+    </div>
+
+    <p id="message"></p>
+
+    <script>
+        // --- 2. JavaScript pour la logique du jeu ---
+        const GRID_SIZE = 9;
+        let solutionGrid = []; // La grille solution complète
+        let currentGrid = []; // La grille actuelle du joueur
+        let selectedCell = null;
+        let prefilledCells = new Set(); // Pour stocker les indices des cases de départ
+
+        const gridElement = document.getElementById('sudoku-grid');
+        const messageElement = document.getElementById('message');
+
+        /**
+         * INITIALISATION
+         */
+
+        // Appeler pour lancer la première partie
+        newGame(40); // 40 chiffres masqués pour un niveau moyen
+
+        /**
+         * GESTION DE L'INTERACTION
+         */
+        
+        // Clic sur une cellule de la grille
+        gridElement.addEventListener('click', (event) => {
+            let target = event.target;
+            // Assurez-vous que l'on clique sur une cellule
+            if (!target.classList.contains('cell')) {
+                return;
+            }
+
+            // Désélectionner l'ancienne cellule
+            if (selectedCell) {
+                selectedCell.classList.remove('selected');
+            }
+
+            // Sélectionner la nouvelle cellule (seulement si elle n'est pas préremplie)
+            if (!target.classList.contains('prefilled')) {
+                selectedCell = target;
+                selectedCell.classList.add('selected');
+                messageElement.textContent = "";
+            } else {
+                selectedCell = null; // Ne rien sélectionner si c'est un chiffre de départ
+                messageElement.textContent = "Cette case est un chiffre de départ !";
+            }
+        });
+
+        // Clic sur le pavé numérique
+        document.getElementById('touchpad').addEventListener('click', (event) => {
+            const button = event.target.closest('.number-button');
+            if (!button || !selectedCell) return;
+
+            const value = button.getAttribute('data-value');
+            const row = parseInt(selectedCell.dataset.row);
+            const col = parseInt(selectedCell.dataset.col);
+
+            // Retirer les classes d'erreur
+            selectedCell.classList.remove('error');
+
+            if (value === '0') {
+                // Effacer la valeur
+                selectedCell.textContent = '';
+                selectedCell.classList.remove('user-filled');
+                currentGrid[row][col] = 0;
+            } else {
+                // Remplir avec la valeur
+                selectedCell.textContent = value;
+                selectedCell.classList.add('user-filled');
+                currentGrid[row][col] = parseInt(value);
+            }
+        });
+
+        // Clic sur les boutons de contrôle
+        document.getElementById('check-btn').addEventListener('click', checkGame);
+        document.getElementById('new-game-btn').addEventListener('click', () => {
+            // Demande le nombre de cases masquées ou utilise la valeur par défaut
+            const holes = prompt("Entrez le nombre de cases à masquer (ex: 40 pour moyen) :", "40");
+            const numHoles = parseInt(holes);
+            if (!isNaN(numHoles) && numHoles >= 10 && numHoles <= 60) {
+                 newGame(numHoles);
+            } else {
+                alert("Valeur non valide. Une nouvelle partie avec 40 cases masquées est lancée.");
+                newGame(40);
+            }
+        });
+
+        /**
+         * FONCTIONS DE JEU
+         */
+
+        /**
+         * Lance une nouvelle partie de Sudoku.
+         * @param {number} holes Le nombre de cases à masquer (difficulté).
+         */
+        function newGame(holes) {
+            messageElement.textContent = "Génération d'une nouvelle grille en cours...";
+            
+            // 1. Génération de la grille SOLUTION
+            solutionGrid = generateFullGrid();
+
+            // 2. Création de la grille de DÉPART du joueur (copie de la solution)
+            currentGrid = solutionGrid.map(arr => [...arr]); // Copie profonde
+
+            // 3. Masquer les chiffres
+            maskNumbers(currentGrid, holes);
+
+            // 4. Affichage dans le HTML
+            renderGrid(currentGrid);
+            
+            messageElement.textContent = "C'est parti ! Bonne chance ! 🍀";
+            selectedCell = null;
+        }
+
+        /**
+         * Affiche la grille actuelle dans le HTML.
+         * @param {number[][]} grid La grille à afficher.
+         */
+        function renderGrid(grid) {
+            gridElement.innerHTML = ''; // Vider la grille précédente
+            prefilledCells.clear();
+            
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    const value = grid[r][c];
+
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        cell.classList.add('prefilled');
+                        prefilledCells.add(`${r}-${c}`);
+                    } else {
+                        // Ajouter les classes pour la mise en forme des blocs 3x3
+                        if (r % 3 === 2 && r !== 8) {
+                            cell.style.borderBottom = '3px solid #000';
+                        }
+                        if (c % 3 === 2 && c !== 8) {
+                             cell.style.borderRight = '3px solid #000';
+                        }
+                    }
+
+                    // On s'assure que toutes les classes d'erreurs sont retirées
+                    cell.classList.remove('error', 'selected', 'user-filled');
+
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        /**
+         * Vérifie la grille du joueur.
+         * 1. Vérifie si le joueur a complété la grille.
+         * 2. Si oui, vérifie si la solution est correcte.
+         */
+        function checkGame() {
+            // Réinitialiser les erreurs visuelles
+            document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('error'));
+            
+            // 1. Vérifier si toutes les cases sont remplies
+            let isComplete = true;
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (currentGrid[r][c] === 0) {
+                        isComplete = false;
+                        break;
+                    }
+                }
+                if (!isComplete) break;
+            }
+
+            if (!isComplete) {
+                messageElement.textContent = "La grille n'est pas encore complète ! Continue ! 💪";
+                return;
+            }
+            
+            // 2. Vérifier si la grille complétée est correcte (par rapport à la solution)
+            let isCorrect = true;
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (currentGrid[r][c] !== solutionGrid[r][c]) {
+                        isCorrect = false;
+                        // Mettre en évidence les erreurs (seulement les cases entrées par l'utilisateur)
+                        const cellElement = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                        if (!cellElement.classList.contains('prefilled')) {
+                            cellElement.classList.add('error');
+                        }
+                    }
+                }
+            }
+
+            if (isCorrect) {
+                messageElement.textContent = "Félicitations ! Vous avez résolu le Sudoku ! 🎉";
+            } else {
+                messageElement.textContent = "Hmm, il y a des erreurs. Les cases en rouge sont incorrectes ! 🧐";
+            }
+        }
+
+
+        /**
+         * FONCTIONS DE GÉNÉRATION DE GRILLE (Le cœur de la logique)
+         */
+
+        /**
+         * Génère une grille de Sudoku complète et valide.
+         * @returns {number[][]} La grille 9x9 remplie.
+         */
+        function generateFullGrid() {
+            let grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+            // On utilise la même fonction de résolution pour générer la grille
+            solveGrid(grid); 
+            return grid;
+        }
+
+        /**
+         * Trouve l'index de la prochaine case vide (0).
+         * @param {number[][]} grid La grille de Sudoku.
+         * @returns {{row: number, col: number} | null} Les coordonnées ou null si la grille est pleine.
+         */
+        function findEmpty(grid) {
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (grid[r][c] === 0) {
+                        return { row: r, col: c };
+                    }
+                }
+            }
+            return null; // Grille pleine
+        }
+
+        /**
+         * Vérifie si un nombre est valide à une position donnée.
+         * @param {number[][]} grid La grille de Sudoku.
+         * @param {number} r La ligne.
+         * @param {number} c La colonne.
+         * @param {number} num Le nombre à vérifier (1-9).
+         * @returns {boolean} Vrai si le nombre peut être placé.
+         */
+        function isSafe(grid, r, c, num) {
+            // 1. Vérification de la ligne
+            for (let col = 0; col < 9; col++) {
+                if (grid[r][col] === num) return false;
+            }
+
+            // 2. Vérification de la colonne
+            for (let row = 0; row < 9; row++) {
+                if (grid[row][c] === num) return false;
+            }
+
+            // 3. Vérification du bloc 3x3
+            const startRow = r - r % 3;
+            const startCol = c - c % 3;
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    if (grid[startRow + row][startCol + col] === num) return false;
+                }
+            }
+
+            return true;
+        }
+
+        /**
+         * Fonction de résolution récursive par Backtracking.
+         * Utilisée pour générer la grille complète.
+         * @param {number[][]} grid La grille de Sudoku à résoudre/remplir.
+         * @returns {boolean} Vrai si une solution est trouvée.
+         */
+        function solveGrid(grid) {
+            const emptyPos = findEmpty(grid);
+            if (!emptyPos) {
+                return true; // La grille est pleine, c'est la solution
+            }
+
+            const { row, col } = emptyPos;
+            
+            // On mélange les chiffres (1-9) pour avoir une grille aléatoire
+            const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+
+            for (const num of numbers) {
+                if (isSafe(grid, row, col, num)) {
+                    grid[row][col] = num;
+                    if (solveGrid(grid)) {
+                        return true;
+                    }
+                    // BACKTRACKING : Si l'essai n'a pas mené à une solution, on annule.
+                    grid[row][col] = 0;
+                }
+            }
+
+            return false; // Pas de solution trouvée
+        }
+
+        /**
+         * Masque aléatoirement des chiffres dans la grille de départ (pour créer le puzzle).
+         * @param {number[][]} grid La grille complète à modifier.
+         * @param {number} holes Le nombre de chiffres à masquer.
+         */
+        function maskNumbers(grid, holes) {
+            let count = holes;
+            while (count > 0) {
+                // Choisir une position aléatoire
+                let r = Math.floor(Math.random() * 9);
+                let c = Math.floor(Math.random() * 9);
+
+                // Si la case n'est pas déjà vide, on la vide
+                if (grid[r][c] !== 0) {
+                    grid[r][c] = 0;
+                    count--;
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

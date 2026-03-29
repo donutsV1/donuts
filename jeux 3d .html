@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Jeu de Bûcheron 3D - Craft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 5px black;
+            z-index: 10;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px black;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #inventory {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        #inventory h3 {
+            margin-bottom: 10px;
+            border-bottom: 2px solid white;
+            padding-bottom: 5px;
+        }
+
+        #craftMenu {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 40, 40, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #8B4513;
+            color: white;
+            z-index: 100;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        #craftMenu h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+
+        .craft-item {
+            background: rgba(60, 60, 60, 0.8);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .craft-item:hover {
+            background: rgba(80, 80, 80, 0.9);
+            border-color: #FFD700;
+            transform: scale(1.02);
+        }
+
+        .craft-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .craft-item.disabled:hover {
+            transform: none;
+            border-color: #666;
+        }
+
+        .craft-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .craft-cost {
+            color: #FFD700;
+            font-size: 14px;
+        }
+
+        #closeMenu {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            border-radius: 10px;
+            color: white;
+            font-size: 24px;
+            margin: 5px;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            text-align: center;
+            line-height: 60px;
+            touch-action: none;
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #wasd {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 5px;
+        }
+
+        #craftBtn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: rgba(139, 69, 19, 0.8);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+
+        #craftBtn:hover {
+            background: rgba(139, 69, 19, 1);
+            transform: scale(1.05);
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px black;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="crosshair"></div>
+    
+    <div id="hud">
+        <div>🪓 Arbres coupés: <span id="score">0</span></div>
+    </div>
+
+    <div id="inventory">
+        <h3>📦 Inventaire</h3>
+        <div>🪵 Bois: <span id="wood">0</span></div>
+        <div>🌿 Feuilles: <span id="leaves">0</span></div>
+    </div>
+
+    <div id="instructions">
+        WASD: Bouger | Souris: Regarder | Clic: Couper | C: Craft
+    </div>
+
+    <button id="craftBtn">⚒️ CRAFT (C)</button>
+
+    <div id="craftMenu">
+        <button id="closeMenu">×</button>
+        <h2>⚒️ Menu de Craft</h2>
+        <div class="craft-item" data-item="house">
+            <div class="craft-title">🏠 Maison en bois</div>
+            <div class="craft-cost">Coût: 20 Bois + 10 Feuilles</div>
+        </div>
+        <div class="craft-item" data-item="bridge">
+            <div class="craft-title">🌉 Pont</div>
+            <div class="craft-cost">Coût: 15 Bois</div>
+        </div>
+        <div class="craft-item" data-item="fence">
+            <div class="craft-title">🪵 Barrière</div>
+            <div class="craft-cost">Coût: 5 Bois</div>
+        </div>
+        <div class="craft-item" data-item="campfire">
+            <div class="craft-title">🔥 Feu de camp</div>
+            <div class="craft-cost">Coût: 3 Bois + 5 Feuilles</div>
+        </div>
+        <div class="craft-item" data-item="tower">
+            <div class="craft-title">🗼 Tour d'observation</div>
+            <div class="craft-cost">Coût: 30 Bois + 15 Feuilles</div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div id="wasd">
+            <div></div>
+            <div class="control-btn" id="btnW">↑</div>
+            <div></div>
+            <div class="control-btn" id="btnA">←</div>
+            <div class="control-btn" id="btnS">↓</div>
+            <div class="control-btn" id="btnD">→</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        var scene, camera, renderer, raycaster, mouse;
+        var trees = [];
+        var buildings = [];
+        var score = 0;
+        var wood = 0;
+        var leaves = 0;
+        var isTouching = false;
+        var lastTouchX = 0;
+        var lastTouchY = 0;
+        var moveForward = false;
+        var moveBackward = false;
+        var moveLeft = false;
+        var moveRight = false;
+        var velocity = new THREE.Vector3();
+        var direction = new THREE.Vector3();
+        var moveSpeed = 0.1;
+        var craftMenuOpen = false;
+
+        var recipes = {
+            house: { wood: 20, leaves: 10 },
+            bridge: { wood: 15, leaves: 0 },
+            fence: { wood: 5, leaves: 0 },
+            campfire: { wood: 3, leaves: 5 },
+            tower: { wood: 30, leaves: 15 }
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 10, 50);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            var groundGeometry = new THREE.PlaneGeometry(100, 100);
+            var groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            var ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            for (var i = 0; i < 15; i++) {
+                var x = (Math.random() - 0.5) * 30;
+                var z = (Math.random() - 0.5) * 30 - 10;
+                createTree(x, z);
+            }
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onClick);
+            window.addEventListener('touchstart', onTouchStart);
+            window.addEventListener('touchmove', onTouchMove);
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('resize', onResize);
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+
+            document.getElementById('btnW').addEventListener('touchstart', function() { moveForward = true; });
+            document.getElementById('btnW').addEventListener('touchend', function() { moveForward = false; });
+            document.getElementById('btnS').addEventListener('touchstart', function() { moveBackward = true; });
+            document.getElementById('btnS').addEventListener('touchend', function() { moveBackward = false; });
+            document.getElementById('btnA').addEventListener('touchstart', function() { moveLeft = true; });
+            document.getElementById('btnA').addEventListener('touchend', function() { moveLeft = false; });
+            document.getElementById('btnD').addEventListener('touchstart', function() { moveRight = true; });
+            document.getElementById('btnD').addEventListener('touchend', function() { moveRight = false; });
+
+            document.getElementById('craftBtn').addEventListener('click', toggleCraftMenu);
+            document.getElementById('closeMenu').addEventListener('click', toggleCraftMenu);
+
+            var craftItems = document.querySelectorAll('.craft-item');
+            for (var i = 0; i < craftItems.length; i++) {
+                craftItems[i].addEventListener('click', handleCraft);
+            }
+
+            animate();
+        }
+
+        function createTree(x, z) {
+            var group = new THREE.Group();
+            
+            var trunkGeometry = new THREE.CylinderGeometry(0.3, 0.4, 3, 8);
+            var trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            var trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1.5;
+            trunk.castShadow = true;
+            group.add(trunk);
+
+            var leavesGeometry = new THREE.SphereGeometry(1.2, 8, 8);
+            var leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            var leavesObj = new THREE.Mesh(leavesGeometry, leavesMaterial);
+            leavesObj.position.y = 3.5;
+            leavesObj.castShadow = true;
+            group.add(leavesObj);
+
+            group.position.set(x, 0, z);
+            group.userData.health = 3;
+            group.userData.isTree = true;
+            
+            scene.add(group);
+            trees.push(group);
+        }
+
+        function createBuilding(type, x, z) {
+            var group = new THREE.Group();
+            
+            if (type === 'house') {
+                var wallGeom = new THREE.BoxGeometry(3, 2, 3);
+                var wallMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                var walls = new THREE.Mesh(wallGeom, wallMat);
+                walls.position.y = 1;
+                walls.castShadow = true;
+                group.add(walls);
+
+                var roofGeom = new THREE.ConeGeometry(2.5, 1.5, 4);
+                var roofMat = new THREE.MeshStandardMaterial({ color: 0xA0522D });
+                var roof = new THREE.Mesh(roofGeom, roofMat);
+                roof.position.y = 2.75;
+                roof.rotation.y = Math.PI / 4;
+                roof.castShadow = true;
+                group.add(roof);
+            } else if (type === 'bridge') {
+                var plankGeom = new THREE.BoxGeometry(5, 0.2, 2);
+                var plankMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                var plank = new THREE.Mesh(plankGeom, plankMat);
+                plank.position.y = 0.1;
+                plank.castShadow = true;
+                group.add(plank);
+            } else if (type === 'fence') {
+                for (var i = -1; i <= 1; i++) {
+                    var postGeom = new THREE.BoxGeometry(0.2, 1, 0.2);
+                    var postMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                    var post = new THREE.Mesh(postGeom, postMat);
+                    post.position.set(i, 0.5, 0);
+                    post.castShadow = true;
+                    group.add(post);
+                }
+            } else if (type === 'campfire') {
+                var logGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8);
+                var logMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                for (var j = 0; j < 4; j++) {
+                    var log = new THREE.Mesh(logGeom, logMat);
+                    log.position.y = 0.2;
+                    log.rotation.x = Math.PI / 2;
+                    log.rotation.z = (Math.PI / 2) * j;
+                    log.castShadow = true;
+                    group.add(log);
+                }
+                var fireGeom = new THREE.ConeGeometry(0.3, 0.6, 6);
+                var fireMat = new THREE.MeshStandardMaterial({ color: 0xFF4500, emissive: 0xFF4500 });
+                var fire = new THREE.Mesh(fireGeom, fireMat);
+                fire.position.y = 0.5;
+                group.add(fire);
+            } else if (type === 'tower') {
+                var baseGeom = new THREE.CylinderGeometry(1, 1.2, 5, 8);
+                var baseMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                var base = new THREE.Mesh(baseGeom, baseMat);
+                base.position.y = 2.5;
+                base.castShadow = true;
+                group.add(base);
+
+                var topGeom = new THREE.ConeGeometry(1.5, 2, 8);
+                var topMat = new THREE.MeshStandardMaterial({ color: 0xA0522D });
+                var top = new THREE.Mesh(topGeom, topMat);
+                top.position.y = 6;
+                top.castShadow = true;
+                group.add(top);
+            }
+
+            group.position.set(x, 0, z);
+            scene.add(group);
+            buildings.push(group);
+        }
+
+        function toggleCraftMenu() {
+            craftMenuOpen = !craftMenuOpen;
+            document.getElementById('craftMenu').style.display = craftMenuOpen ? 'block' : 'none';
+            updateCraftButtons();
+        }
+
+        function updateCraftButtons() {
+            var craftItems = document.querySelectorAll('.craft-item');
+            for (var i = 0; i < craftItems.length; i++) {
+                var item = craftItems[i];
+                var type = item.getAttribute('data-item');
+                var recipe = recipes[type];
+                
+                if (wood >= recipe.wood && leaves >= recipe.leaves) {
+                    item.classList.remove('disabled');
+                } else {
+                    item.classList.add('disabled');
+                }
+            }
+        }
+
+        function handleCraft(event) {
+            var item = event.currentTarget;
+            var type = item.getAttribute('data-item');
+            var recipe = recipes[type];
+            
+            if (wood >= recipe.wood && leaves >= recipe.leaves) {
+                wood -= recipe.wood;
+                leaves -= recipe.leaves;
+                updateInventory();
+                
+                var forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                forward.y = 0;
+                forward.normalize();
+                
+                var buildX = camera.position.x + forward.x * 3;
+                var buildZ = camera.position.z + forward.z * 3;
+                
+                createBuilding(type, buildX, buildZ);
+                toggleCraftMenu();
+            }
+        }
+
+        function updateInventory() {
+            document.getElementById('wood').textContent = wood;
+            document.getElementById('leaves').textContent = leaves;
+        }
+
+        function onMouseMove(event) {
+            var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            camera.rotation.y = -mouseX * 0.5;
+            camera.rotation.x = mouseY * 0.3;
+        }
+
+        function onTouchStart(event) {
+            if (event.target.closest('#craftMenu') || event.target.closest('#craftBtn')) return;
+            event.preventDefault();
+            isTouching = true;
+            var touch = event.touches[0];
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+        }
+
+        function onTouchMove(event) {
+            if (event.target.closest('#craftMenu') || event.target.closest('#craftBtn')) return;
+            event.preventDefault();
+            if (!isTouching) return;
+            
+            var touch = event.touches[0];
+            var deltaX = touch.clientX - lastTouchX;
+            var deltaY = touch.clientY - lastTouchY;
+            
+            camera.rotation.y -= deltaX * 0.005;
+            camera.rotation.x -= deltaY * 0.005;
+            
+            camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+            
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+        }
+
+        function onTouchEnd(event) {
+            if (event.target.closest('#craftMenu') || event.target.closest('#craftBtn')) return;
+            event.preventDefault();
+            isTouching = false;
+            
+            if (event.changedTouches.length > 0) {
+                var touch = event.changedTouches[0];
+                chopTree(touch.clientX, touch.clientY);
+            }
+        }
+
+        function onClick(event) {
+            if (event.target.closest('#craftMenu') || event.target.closest('#craftBtn')) return;
+            chopTree(event.clientX, event.clientY);
+        }
+
+        function chopTree(clientX, clientY) {
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scene.children, true);
+
+            for (var i = 0; i < intersects.length; i++) {
+                var obj = intersects[i].object;
+                while (obj.parent && !obj.userData.isTree) {
+                    obj = obj.parent;
+                }
+
+                if (obj.userData.isTree) {
+                    obj.userData.health--;
+                    
+                    var originalZ = obj.rotation.z;
+                    obj.rotation.z += 0.1;
+                    (function(o, oz) {
+                        setTimeout(function() { 
+                            o.rotation.z = oz; 
+                        }, 100);
+                    })(obj, originalZ);
+
+                    if (obj.userData.health <= 0) {
+                        wood += 3;
+                        leaves += 2;
+                        updateInventory();
+                        fallTree(obj);
+                        score++;
+                        document.getElementById('score').textContent = score;
+                    }
+                    break;
+                }
+            }
+        }
+
+        function fallTree(tree) {
+            var fall = function() {
+                tree.rotation.x += 0.05;
+                tree.position.y -= 0.02;
+                
+                if (tree.rotation.x < Math.PI / 2) {
+                    requestAnimationFrame(fall);
+                } else {
+                    scene.remove(tree);
+                    var index = trees.indexOf(tree);
+                    if (index > -1) trees.splice(index, 1);
+                    
+                    var x = (Math.random() - 0.5) * 30;
+                    var z = (Math.random() - 0.5) * 30 - 10;
+                    createTree(x, z);
+                }
+            };
+            fall();
+        }
+
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onKeyDown(event) {
+            switch(event.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    moveForward = true;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    moveBackward = true;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    moveLeft = true;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    moveRight = true;
+                    break;
+                case 'KeyC':
+                    toggleCraftMenu();
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch(event.code) {
+                case 'KeyW':
+                case 'ArrowUp':
+                    moveForward = false;
+                    break;
+                case 'KeyS':
+                case 'ArrowDown':
+                    moveBackward = false;
+                    break;
+                case 'KeyA':
+                case 'ArrowLeft':
+                    moveLeft = false;
+                    break;
+                case 'KeyD':
+                case 'ArrowRight':
+                    moveRight = false;
+                    break;
+            }
+        }
+
+        function updateMovement() {
+            velocity.x -= velocity.x * 10.0 * 0.016;
+            velocity.z -= velocity.z * 10.0 * 0.016;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * moveSpeed;
+            if (moveLeft || moveRight) velocity.x -= direction.x * moveSpeed;
+
+            var forward = new THREE.Vector3();
+            camera.getWorldDirection(forward);
+            forward.y = 0;
+            forward.normalize();
+
+            var right = new THREE.Vector3();
+            right.crossVectors(forward, camera.up).normalize();
+
+            camera.position.addScaledVector(forward, -velocity.z);
+            camera.position.addScaledVector(right, -velocity.x);
+
+            camera.position.y = 1.6;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateMovement();
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Points</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: black;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+
+        button {
+            background: #ddd;
+            color: black;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: 1px solid #999;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ccc;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .points-display {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 50px;
+            max-height: 600px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #999;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .column-point {
+            font-size: 1.5em;
+            line-height: 1.5;
+        }
+
+        .total {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Générateur de Points</h1>
+        
+        <div class="controls">
+            <label for="numberInput">Entrez un nombre :</label>
+            <input type="number" id="numberInput" min="0" max="10000" placeholder="Ex: 10">
+            
+            <label for="columnSize">Taille des colonnes :</label>
+            <select id="columnSize">
+                <option value="10">10 points par colonne</option>
+                <option value="50">50 points par colonne</option>
+                <option value="100">100 points par colonne</option>
+            </select>
+            
+            <button onclick="generatePoints()">Générer</button>
+        </div>
+        
+        <div class="points-display" id="pointsDisplay"></div>
+        
+        <div class="total" id="total"></div>
+    </div>
+
+    <script>
+        function generatePoints() {
+            const input = document.getElementById('numberInput');
+            const display = document.getElementById('pointsDisplay');
+            const total = document.getElementById('total');
+            const columnSize = parseInt(document.getElementById('columnSize').value);
+            
+            const number = parseInt(input.value);
+            
+            if (isNaN(number) || number < 0) {
+                alert('Veuillez entrer un nombre valide (positif)');
+                return;
+            }
+            
+            if (number > 10000) {
+                alert('Le nombre maximum est 10000');
+                return;
+            }
+            
+            display.innerHTML = '';
+            
+            let remaining = number;
+            let columnCount = 0;
+            
+            while (remaining > 0) {
+                const pointsInColumn = Math.min(remaining, columnSize);
+                
+                const column = document.createElement('div');
+                column.className = 'column';
+                
+                for (let i = 0; i < pointsInColumn; i++) {
+                    const point = document.createElement('div');
+                    point.className = 'column-point';
+                    point.textContent = '•';
+                    column.appendChild(point);
+                }
+                
+                display.appendChild(column);
+                remaining -= pointsInColumn;
+                columnCount++;
+            }
+            
+            total.textContent = `Total : ${number} point${number > 1 ? 's' : ''} | ${columnCount} colonne${columnCount > 1 ? 's' : ''} de ${columnSize}`;
+        }
+
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generatePoints();
+            }
+        });
+    </script>
+</body>
+</html>
