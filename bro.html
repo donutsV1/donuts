@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificat d'Adoption de Bro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #1a1206;
+      background-image:
+        radial-gradient(ellipse at 20% 30%, #2e1f08 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, #2a1a05 0%, transparent 60%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 3rem 1rem 4rem;
+      font-family: 'Crimson Pro', serif;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .page-header .emoji { font-size: 48px; display: block; margin-bottom: 12px; }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 5vw, 40px);
+      color: #f0d99a;
+      letter-spacing: 2px;
+      line-height: 1.2;
+    }
+
+    .page-header p {
+      margin-top: 8px;
+      font-size: 16px;
+      font-style: italic;
+      color: #a07840;
+    }
+
+    /* ── FORM ── */
+    .form-zone {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .form-zone input {
+      font-family: 'Crimson Pro', serif;
+      font-size: 17px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: 1.5px solid #7a5c2e;
+      background: #2e1f08;
+      color: #f0d99a;
+      outline: none;
+      width: 260px;
+      transition: border-color 0.2s;
+    }
+
+    .form-zone input::placeholder { color: #7a5c2e; }
+    .form-zone input:focus { border-color: #c9a055; }
+
+    .form-zone button {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      padding: 10px 22px;
+      border-radius: 6px;
+      border: 1.5px solid #c9a055;
+      background: #c9a055;
+      color: #1a1206;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .form-zone button:hover { background: #e0b86a; }
+    .form-zone button:active { transform: scale(0.97); }
+
+    /* ── CERTIFICATE ── */
+    #cert-output {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    #cert-output.visible { display: flex; }
+
+    .cert-paper {
+      background: #fdf8f0;
+      border: 1.5px solid #c9b99a;
+      border-radius: 6px;
+      padding: 3rem 3rem 2.5rem;
+      max-width: 640px;
+      width: 100%;
+      position: relative;
+      color: #2a1f0e;
+    }
+
+    .cert-paper::before {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      border: 1px solid #c9b99a;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+
+    /* corners */
+    .cert-paper::after {
+      content: '✦';
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      font-size: 10px;
+      color: #c9b99a;
+    }
+
+    .corner-br {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      font-size: 10px;
+      color: #c9b99a;
+    }
+
+    /* header */
+    .cert-header { text-align: center; margin-bottom: 1.5rem; }
+    .cert-org {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #7a5c2e;
+      margin-bottom: 10px;
+    }
+    .cert-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #2a1f0e;
+      line-height: 1.2;
+    }
+    .cert-subtitle {
+      font-style: italic;
+      font-size: 17px;
+      color: #7a5c2e;
+      margin-top: 4px;
+    }
+
+    .cert-divider {
+      text-align: center;
+      font-size: 16px;
+      color: #c9b99a;
+      letter-spacing: 10px;
+      margin: 1.2rem 0;
+    }
+
+    /* body */
+    .cert-body { text-align: center; line-height: 2; }
+
+    .cert-body .intro {
+      font-size: 14px;
+      color: #5a4020;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .cert-name-display {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 7vw, 48px);
+      font-style: italic;
+      color: #2a1f0e;
+      margin: 10px 0 6px;
+      line-height: 1;
+    }
+
+    .cert-body .clause {
+      font-size: 15px;
+      color: #3a2a10;
+      max-width: 460px;
+      margin: 14px auto;
+      line-height: 1.8;
+    }
+
+    .cert-body .duties {
+      font-size: 13px;
+      font-style: italic;
+      color: #7a5c2e;
+      max-width: 420px;
+      margin: 0 auto;
+      line-height: 1.8;
+      border-top: 0.5px solid #c9b99a;
+      border-bottom: 0.5px solid #c9b99a;
+      padding: 10px 0;
+    }
+
+    /* footer */
+    .cert-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 0.5px solid #c9b99a;
+    }
+
+    .cert-footer-section {
+      text-align: center;
+      font-size: 12px;
+      color: #7a5c2e;
+      flex: 1;
+    }
+
+    .sig-line {
+      width: 110px;
+      height: 1px;
+      background: #c9b99a;
+      margin: 6px auto 3px;
+    }
+
+    .sig-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-style: italic;
+      color: #2a1f0e;
+    }
+
+    .cert-seal { text-align: center; flex: 0 0 80px; }
+
+    .seal-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2px solid #c9b99a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .seal-emoji { font-size: 26px; }
+    .seal-text { font-size: 7px; letter-spacing: 1.5px; text-transform: uppercase; color: #7a5c2e; margin-top: 2px; }
+
+    .cert-number {
+      font-size: 10px;
+      color: #b09a78;
+      letter-spacing: 3px;
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+
+    /* print button */
+    .btn-print {
+      margin-top: 1.5rem;
+      font-family: 'Crimson Pro', serif;
+      font-size: 15px;
+      padding: 10px 28px;
+      border-radius: 6px;
+      border: 1.5px solid #7a5c2e;
+      background: transparent;
+      color: #f0d99a;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-print:hover { background: #7a5c2e; color: #fdf8f0; }
+
+    /* animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body {
+        background: white !important;
+        padding: 0;
+      }
+      .page-header, .form-zone, .btn-print { display: none !important; }
+      #cert-output { display: flex !important; }
+      .cert-paper {
+        border: 1.5px solid #c9b99a;
+        box-shadow: none;
+        max-width: 100%;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <span class="emoji">🤝</span>
+    <h1>Bureau Officiel d'Adoption de Bro</h1>
+    <p>Certifié par la République Universelle des Bros depuis 2024</p>
+  </div>
+
+  <div class="form-zone">
+    <input type="text" id="bro-name" placeholder="Prénom du bro..." maxlength="30" />
+    <button onclick="generateCert()">Générer</button>
+  </div>
+
+  <div id="cert-output">
+    <div class="cert-paper" id="cert-paper">
+      <span class="corner-br">✦</span>
+
+      <div class="cert-header">
+        <div class="cert-org">République Universelle des Bros</div>
+        <div class="cert-title">Certificat d'Adoption</div>
+        <div class="cert-subtitle">de Bro Officiel</div>
+      </div>
+
+      <div class="cert-divider">✦ ✦ ✦</div>
+
+      <div class="cert-body">
+        <div class="intro">Le présent acte certifie solennellement que</div>
+        <div class="cert-name-display" id="display-name">–</div>
+        <div class="clause">
+          est désormais reconnu(e) comme <strong>Bro Officiel</strong> au sein de la Confrérie Universelle des Bros,
+          avec tous les droits, avantages et dabs qui s'y rattachent.
+        </div>
+        <div class="duties">
+          Ses devoirs : être là dans les galères &nbsp;·&nbsp; prêter son chargeur sans rechigner &nbsp;·&nbsp;
+          ne jamais juger les choix douteux &nbsp;·&nbsp; répondre "Ouéé frère" en toutes circonstances.
+        </div>
+      </div>
+
+      <div class="cert-footer">
+        <div class="cert-footer-section">
+          <div class="sig-line"></div>
+          <div class="sig-name">Big Bro Suprême</div>
+          <div>Président des Bros</div>
+        </div>
+
+        <div class="cert-seal">
+          <div class="seal-circle">
+            <div class="seal-emoji">🤝</div>
+          </div>
+          <div class="seal-text">Sceau officiel</div>
+        </div>
+
+        <div class="cert-footer-section">
+          <div class="sig-line"></div>
+          <div class="sig-name">Ministère du Bro</div>
+          <div id="cert-date">—</div>
+        </div>
+      </div>
+
+      <div class="cert-number" id="cert-number">N° —</div>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Imprimer / Sauvegarder en PDF
+    </button>
+  </div>
+
+  <script>
+    function generateCert() {
+      const name = document.getElementById('bro-name').value.trim();
+      if (!name) {
+        document.getElementById('bro-name').focus();
+        return;
+      }
+
+      document.getElementById('display-name').textContent = name;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('cert-date').textContent = dateStr;
+
+      const num = 'BRO-' + Math.floor(Math.random() * 90000 + 10000);
+      document.getElementById('cert-number').textContent = 'N° ' + num;
+
+      const output = document.getElementById('cert-output');
+      output.classList.add('visible');
+      output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.getElementById('bro-name').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') generateCert();
+    });
+  </script>
+
+</body>
+</html>
