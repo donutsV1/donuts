@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sélecteurs & Entrées</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e12;
+    --surface: #1a1a22;
+    --surface2: #24242f;
+    --border: #35354a;
+    --accent: #7c6ef7;
+    --accent2: #4ecdc4;
+    --text: #f0f0f8;
+    --muted: #8888aa;
+    --danger: #ff6b6b;
+    --radius: 12px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── Section ────────────────────────────────── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  /* ── Roulettes ──────────────────────────────── */
+  .roulettes-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .roulette-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+  }
+
+  .roulette-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+  }
+
+  .scroll-drum {
+    width: 80px;
+    height: 140px;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    cursor: ns-resize;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll-drum::-webkit-scrollbar { display: none; }
+  .scroll-drum { scrollbar-width: none; }
+
+  .drum-inner {
+    padding: 50px 0;
+  }
+
+  .drum-option {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--muted);
+    scroll-snap-align: center;
+    transition: color 0.15s;
+    user-select: none;
+  }
+
+  /* Highlight ring */
+  .scroll-drum::before,
+  .scroll-drum::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.45;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .scroll-drum::before { top: 50px; }
+  .scroll-drum::after  { top: 89px; }
+
+  /* Fade top/bottom */
+  .drum-fade {
+    position: relative;
+  }
+  .drum-fade::before,
+  .drum-fade::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 48px;
+    z-index: 3;
+    pointer-events: none;
+    border-radius: 10px;
+  }
+  .drum-fade::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--surface2), transparent);
+  }
+  .drum-fade::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--surface2), transparent);
+  }
+
+  .roulette-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 80px;
+    text-align: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+  }
+
+  /* Badge de type */
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #7c6ef722;
+    color: var(--accent);
+    border: 1px solid #7c6ef744;
+  }
+
+  .badge.secondary {
+    background: #4ecdc422;
+    color: var(--accent2);
+    border-color: #4ecdc444;
+  }
+
+  /* ── Boutons ───────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+
+  .btn:hover { background: #2e2e3e; border-color: var(--accent); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn.primary:hover { background: #9380ff; }
+
+  .btn.danger {
+    color: var(--danger);
+    border-color: #ff6b6b44;
+  }
+  .btn.danger:hover { background: #ff6b6b18; border-color: var(--danger); }
+
+  /* ── Inputs numériques ──────────────────────── */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .input-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .input-item label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+  }
+
+  .num-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .num-btn {
+    width: 36px;
+    height: 42px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+
+  .num-btn:hover { background: #3a3a50; color: var(--text); }
+  .num-btn:active { background: #44445a; }
+
+  .num-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0;
+    height: 42px;
+    outline: none;
+    min-width: 0;
+    font-family: var(--font);
+  }
+
+  /* Supprimer les flèches natives */
+  .num-input::-webkit-outer-spin-button,
+  .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .num-input[type=number] { -moz-appearance: textfield; }
+
+  /* ── Résultat ───────────────────────────────── */
+  .result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .result-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .result-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .result-chip {
+    background: #7c6ef718;
+    border: 1px solid #7c6ef740;
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .result-chip span {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-right: 4px;
+  }
+
+  /* ── Utilitaires ───────────────────────────── */
+  .row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+  .sep {
+    height: 1px;
+    background: var(--border);
+    margin: 1rem 0;
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.4rem; }
+    .scroll-drum { width: 70px; }
+    .roulette-value { min-width: 70px; font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Sélecteurs &amp; Entrées</h1>
+<p class="subtitle">Roulettes défilantes · Champs numériques libres</p>
+
+<div class="container">
+
+  <!-- ══ ROULETTES ══ -->
+  <div class="section" id="sec-roulettes">
+
+    <div class="section-header">
+      <span class="section-title">Roulettes défilantes</span>
+      <button class="btn" onclick="addRoulette()">＋ Ajouter une roulette</button>
+    </div>
+
+    <div class="roulettes-wrapper" id="roulettes-container"></div>
+
+    <div class="sep"></div>
+
+    <div class="result-box">
+      <div class="result-title">Valeurs sélectionnées</div>
+      <div class="result-values" id="roulette-result">—</div>
+    </div>
+
+  </div>
+
+  <!-- ══ CHAMPS NUMÉRIQUES ══ -->
+  <div class="section">
+
+    <div class="section-header">
+      <span class="section-title">Entrées numériques libres</span>
+      <button class="btn" onclick="addInput()">＋ Ajouter un champ</button>
+    </div>
+
+    <div class="inputs-grid" id="inputs-container"></div>
+
+    <div class="sep"></div>
+
+    <div class="result-box">
+      <div class="result-title">Valeurs saisies</div>
+      <div class="result-values" id="inputs-result">—</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   ROULETTES
+═══════════════════════════════════════════ */
+
+const rouletteDefs = [
+  { label: 'Base',      values: Array.from({length:101},(_,i)=>i), type: 'primary' },
+  { label: 'Secondaire',values: Array.from({length:101},(_,i)=>i), type: 'secondary' }
+];
+
+let rouletteCount = 0;
+const rouletteValues = {};
+
+function buildRoulette(def) {
+  const id = 'roulette_' + rouletteCount++;
+  rouletteValues[id] = 0;
+
+  const item = document.createElement('div');
+  item.className = 'roulette-item';
+  item.dataset.id = id;
+
+  const header = document.createElement('div');
+  header.className = 'row';
+  header.style.cssText = 'gap:6px;margin-bottom:0;';
+
+  const lbl = document.createElement('span');
+  lbl.className = 'roulette-label';
+  lbl.textContent = def.label;
+
+  const badge = document.createElement('span');
+  badge.className = 'badge' + (def.type === 'secondary' ? ' secondary' : '');
+  badge.textContent = def.type === 'primary' ? 'Base' : def.type === 'secondary' ? 'Sec.' : 'Extra';
+
+  header.appendChild(lbl);
+  header.appendChild(badge);
+
+  /* Drum wrapper with fades */
+  const fade = document.createElement('div');
+  fade.className = 'drum-fade';
+
+  const drum = document.createElement('div');
+  drum.className = 'scroll-drum';
+  drum.id = id + '_drum';
+
+  const inner = document.createElement('div');
+  inner.className = 'drum-inner';
+
+  def.values.forEach(v => {
+    const opt = document.createElement('div');
+    opt.className = 'drum-option';
+    opt.textContent = v;
+    inner.appendChild(opt);
+  });
+
+  drum.appendChild(inner);
+  fade.appendChild(drum);
+
+  /* Value display */
+  const val = document.createElement('div');
+  val.className = 'roulette-value';
+  val.id = id + '_val';
+  val.textContent = '0';
+
+  /* Delete btn (only for non-base) */
+  let delBtn = null;
+  if (def.type === 'extra') {
+    delBtn = document.createElement('button');
+    delBtn.className = 'btn danger';
+    delBtn.innerHTML = '✕';
+    delBtn.title = 'Supprimer';
+    delBtn.style.cssText = 'width:80px;justify-content:center;font-size:0.75rem;padding:0.3rem;';
+    delBtn.addEventListener('click', () => {
+      delete rouletteValues[id];
+      item.remove();
+      updateRouletteResult();
+    });
+  }
+
+  item.appendChild(header);
+  item.appendChild(fade);
+  item.appendChild(val);
+  if (delBtn) item.appendChild(delBtn);
+
+  /* Scroll listener */
+  drum.addEventListener('scroll', () => {
+    const scrollTop = drum.scrollTop;
+    const idx = Math.round(scrollTop / 40);
+    const v = def.values[Math.max(0, Math.min(idx, def.values.length - 1))];
+    rouletteValues[id] = v;
+    val.textContent = v;
+    updateRouletteResult();
+  }, { passive: true });
+
+  return item;
+}
+
+function addRoulette() {
+  const idx = rouletteCount;
+  const def = {
+    label: 'Extra ' + (idx - 1),
+    values: Array.from({length:101},(_,i)=>i),
+    type: 'extra'
+  };
+  const container = document.getElementById('roulettes-container');
+  const el = buildRoulette(def);
+  container.appendChild(el);
+  updateRouletteResult();
+}
+
+function updateRouletteResult() {
+  const box = document.getElementById('roulette-result');
+  const ids = Object.keys(rouletteValues);
+  if (ids.length === 0) { box.innerHTML = '—'; return; }
+  box.innerHTML = ids.map((id, i) => {
+    const el = document.querySelector('[data-id="' + id + '"]');
+    const lbl = el ? el.querySelector('.roulette-label').textContent : 'Roulette ' + (i+1);
+    return '<div class="result-chip"><span>' + lbl + '</span>' + rouletteValues[id] + '</div>';
+  }).join('');
+}
+
+/* Init default roulettes */
+(function init() {
+  const c = document.getElementById('roulettes-container');
+  rouletteDefs.forEach(def => c.appendChild(buildRoulette(def)));
+  updateRouletteResult();
+})();
+
+/* ═══════════════════════════════════════════
+   CHAMPS NUMÉRIQUES
+═══════════════════════════════════════════ */
+
+let inputCount = 0;
+const inputValues = {};
+
+const defaultInputs = [
+  { label: 'Valeur A', min: null, max: null },
+  { label: 'Valeur B', min: null, max: null },
+  { label: 'Valeur C', min: null, max: null },
+];
+
+function buildInput(def) {
+  const id = 'inp_' + inputCount++;
+  inputValues[id] = '';
+
+  const item = document.createElement('div');
+  item.className = 'input-item';
+  item.dataset.id = id;
+
+  const lbl = document.createElement('label');
+  lbl.textContent = def.label;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'num-input-wrapper';
+
+  const btnMinus = document.createElement('button');
+  btnMinus.className = 'num-btn';
+  btnMinus.textContent = '−';
+  btnMinus.type = 'button';
+
+  const inp = document.createElement('input');
+  inp.type = 'number';
+  inp.className = 'num-input';
+  inp.id = id + '_inp';
+  inp.placeholder = '0';
+
+  const btnPlus = document.createElement('button');
+  btnPlus.className = 'num-btn';
+  btnPlus.textContent = '+';
+  btnPlus.type = 'button';
+
+  btnMinus.addEventListener('click', () => {
+    const cur = parseFloat(inp.value) || 0;
+    inp.value = cur - 1;
+    inputValues[id] = inp.value;
+    updateInputsResult();
+  });
+
+  btnPlus.addEventListener('click', () => {
+    const cur = parseFloat(inp.value) || 0;
+    inp.value = cur + 1;
+    inputValues[id] = inp.value;
+    updateInputsResult();
+  });
+
+  inp.addEventListener('input', () => {
+    inputValues[id] = inp.value;
+    updateInputsResult();
+  });
+
+  wrapper.appendChild(btnMinus);
+  wrapper.appendChild(inp);
+  wrapper.appendChild(btnPlus);
+
+  /* Delete btn */
+  if (def.deletable) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.marginTop = '4px';
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn danger';
+    delBtn.innerHTML = '✕ Supprimer';
+    delBtn.style.cssText = 'width:100%;justify-content:center;font-size:0.75rem;padding:0.3rem;';
+    delBtn.type = 'button';
+    delBtn.addEventListener('click', () => {
+      delete inputValues[id];
+      item.remove();
+      updateInputsResult();
+    });
+
+    row.appendChild(delBtn);
+    item.appendChild(lbl);
+    item.appendChild(wrapper);
+    item.appendChild(row);
+  } else {
+    item.appendChild(lbl);
+    item.appendChild(wrapper);
+  }
+
+  return item;
+}
+
+function addInput() {
+  const idx = inputCount;
+  const def = { label: 'Champ ' + (idx + 1), deletable: true };
+  const container = document.getElementById('inputs-container');
+  const el = buildInput(def);
+  container.appendChild(el);
+  updateInputsResult();
+}
+
+function updateInputsResult() {
+  const box = document.getElementById('inputs-result');
+  const ids = Object.keys(inputValues);
+  const filled = ids.filter(id => inputValues[id] !== '' && inputValues[id] !== null);
+  if (filled.length === 0) { box.innerHTML = '—'; return; }
+  box.innerHTML = filled.map(id => {
+    const el = document.querySelector('[data-id="' + id + '"]');
+    const lbl = el ? el.querySelector('label').textContent : 'Champ';
+    return '<div class="result-chip"><span>' + lbl + '</span>' + inputValues[id] + '</div>';
+  }).join('');
+}
+
+/* Init default inputs */
+(function initInputs() {
+  const c = document.getElementById('inputs-container');
+  defaultInputs.forEach(def => c.appendChild(buildInput({ ...def, deletable: false })));
+})();
+</script>
+</body>
+</html>
