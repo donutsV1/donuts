@@ -120,23 +120,6 @@
     .btn-main:hover { background: #e0b86a; }
     .btn-main:active { transform: scale(0.97); }
 
-    .btn-quick-gros {
-      font-family: 'Playfair Display', serif;
-      font-size: 15px;
-      padding: 10px 20px;
-      border-radius: 6px;
-      border: 1.5px solid #e05286;
-      background: #e05286;
-      color: #ffffff;
-      cursor: pointer;
-      font-weight: 700;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 4px;
-    }
-
-    .btn-quick-gros:hover { background: #f06296; }
-    .btn-quick-gros:active { transform: scale(0.97); }
-
     /* ── CERTIFICATE ── */
     #cert-output {
       display: none;
@@ -379,7 +362,7 @@
       <label for="cert-type">Type de certificat</label>
       <select id="cert-type" onchange="toggleInputs()">
         <option value="bro">Adoption de Bro</option>
-        <option value="homo">Gros Homosexuel / Homosexuelle 🌈</option>
+        <option value="homo">Homosexuel / Homosexuelle 🌈</option>
         <option value="femboy">Certificat de Femboy</option>
         <option value="bromance">Certificat de Bromance (2 Noms)</option>
         <option value="branleur">Certificat de Gros Branleur</option>
@@ -394,12 +377,12 @@
       <input type="text" id="name1" placeholder="Ex: Alex" maxlength="30" />
     </div>
 
-    <!-- Option genre pour Homosexuel(le) -->
+    <!-- Option genre si "Homosexuel / Homosexuelle" est sélectionné -->
     <div class="form-group" id="group-gender" style="display: none;">
-      <label for="gender-select">Genre / Formule</label>
+      <label for="gender-select">Genre / Intitulé</label>
       <select id="gender-select">
-        <option value="m">Gros Homosexuel 👑</option>
-        <option value="f">Grosse Homosexuelle ✨</option>
+        <option value="m">Homosexuel 👑</option>
+        <option value="f">Homosexuelle ✨</option>
       </select>
     </div>
 
@@ -437,11 +420,6 @@
     </div>
 
     <button class="btn-main" onclick="generateCert()">Générer le certificat</button>
-
-    <!-- BOUTON DE SÉLECTION RAPIDE GROS HOMOSEXUEL -->
-    <button class="btn-quick-gros" onclick="quickGrosCert()">
-      🌈 Générer le Certificat Gros Homosexuel
-    </button>
   </div>
 
   <div id="cert-output">
@@ -524,11 +502,11 @@
         headerEmoji: '🌈',
         org: 'Haut Conseil Arc-en-Ciel',
         title: 'Certificat Officiel',
-        subtitle: (gender) => gender === 'f' ? 'de Grosse Homosexuelle Certifiée' : 'de Gros Homosexuel Certifié',
+        subtitle: (gender) => gender === 'f' ? 'd\'Homosexuelle Certifiée' : 'd\'Homosexuel Certifié',
         sealEmoji: '👑',
         clause: (n1, n2, gender) => gender === 'f' 
-          ? `est officiellement reconnu(e) comme <strong>Grosse Homosexuelle Maître</strong>, élevée aux plus hautes distinctions du style et de la fabulosité.`
-          : `est officiellement reconnu(e) comme <strong>Gros Homosexuel Maître</strong>, élevé aux plus hautes distinctions du style et de la fabulosité.`,
+          ? `est officiellement reconnu(e) comme <strong>Homosexuelle Maître</strong>, élevée aux plus hautes distinctions du style et de la fabulosité.`
+          : `est officiellement reconnu(e) comme <strong>Homosexuel Maître</strong>, élevé aux plus hautes distinctions du style et de la fabulosité.`,
         duties: 'Ses devoirs : rayonner en toutes circonstances · assumer sa fabulosité suprême · ne jamais manquer d\'élégance.',
         sig1: 'Le Haut Conseil',
         sig1Title: 'Présidence Rainbow',
@@ -629,16 +607,6 @@
         group2.style.display = 'none';
         label1.textContent = 'Nom / Prénom';
         customFields.style.display = 'none';
-      }
-    }
-
-    function quickGrosCert() {
-      document.getElementById('cert-type').value = 'homo';
-      toggleInputs();
-      if (!document.getElementById('name1').value.trim()) {
-        document.getElementById('name1').focus();
-      } else {
-        generateCert();
       }
     }
 
