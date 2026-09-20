@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+<
+      margin: 0 auto;
+      line-height: 1.8;
+      border-top: 0.5px solid #c9b99a;
+      border-bottom: 0.5px solid #c9b99a;
+      padding: 10px 0;
+    }
+
+    /* Certificate Footer & Seal */
+    .cert-footer {
+      display: flex;!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -120,7 +130,7 @@
     .btn-main:hover { background: #e0b86a; }
     .btn-main:active { transform: scale(0.97); }
 
-    /* ── CERTIFICATE ── */
+    /* ── CERTIFICATE PAPER STYLING ── */
     #cert-output {
       display: none;
       flex-direction: column;
@@ -168,7 +178,7 @@
       color: #c9b99a;
     }
 
-    /* header */
+    /* Certificate Header & Divider */
     .cert-header { text-align: center; margin-bottom: 1.5rem; }
     .cert-org {
       font-size: 10px;
@@ -199,7 +209,7 @@
       margin: 1.2rem 0;
     }
 
-    /* body */
+    /* Certificate Body */
     .cert-body { text-align: center; line-height: 2; }
 
     .cert-body .intro {
@@ -231,16 +241,6 @@
       font-style: italic;
       color: #7a5c2e;
       max-width: 420px;
-      margin: 0 auto;
-      line-height: 1.8;
-      border-top: 0.5px solid #c9b99a;
-      border-bottom: 0.5px solid #c9b99a;
-      padding: 10px 0;
-    }
-
-    /* footer */
-    .cert-footer {
-      display: flex;
       justify-content: space-between;
       align-items: flex-end;
       margin-top: 2rem;
@@ -294,7 +294,7 @@
       margin-top: 1.2rem;
     }
 
-    /* action buttons */
+    /* Action Buttons */
     .action-buttons {
       display: flex;
       gap: 12px;
@@ -321,7 +321,7 @@
     .btn-action:hover { background: #7a5c2e; color: #fdf8f0; }
     .btn-action:active { transform: scale(0.97); }
 
-    /* animations */
+    /* Animations */
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-16px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -332,7 +332,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── PRINT ── */
+    /* Print Overrides */
     @media print {
       body {
         background: white !important;
@@ -352,7 +352,7 @@
 <body>
 
   <div class="page-header">
-    <span class="emoji" id="header-emoji">📜</span>
+    <span class="emoji" id="header-emoji">📄</span>
     <h1>Bureau Officiel des Certificats</h1>
     <p>Certifié par la République Universelle des Bros & Internautes</p>
   </div>
@@ -362,8 +362,8 @@
       <label for="cert-type">Type de certificat</label>
       <select id="cert-type" onchange="toggleInputs()">
         <option value="bro">Adoption de Bro</option>
-        <option value="eboy">Certificat d'E-Boy 🖤</option>
-        <option value="femboy">Certificat de Femboy 🎀</option>
+        <option value="homo">Homosexuel / Homosexuelle 🌈</option>
+        <option value="femboy">Certificat de Femboy</option>
         <option value="tomboy">Certificat de Tomboy 🧢</option>
         <option value="furry">Certificat de Furry 🦊</option>
         <option value="bromance">Certificat de Bromance (2 Noms)</option>
@@ -377,6 +377,15 @@
     <div class="form-group" id="group-name1">
       <label for="name1" id="label-name1">Nom / Prénom</label>
       <input type="text" id="name1" placeholder="Ex: Alex" maxlength="30" />
+    </div>
+
+    <!-- Option genre si "Homosexuel / Homosexuelle" est sélectionné -->
+    <div class="form-group" id="group-gender" style="display: none;">
+      <label for="gender-select">Genre / Intitulé</label>
+      <select id="gender-select">
+        <option value="m">Homosexuel 👑</option>
+        <option value="f">Homosexuelle ✨</option>
+      </select>
     </div>
 
     <div class="form-group" id="group-name2" style="display: none;">
@@ -491,18 +500,20 @@
         sig2: 'Ministère du Bro',
         prefix: 'BRO'
       },
-      eboy: {
-        headerEmoji: '🖤',
-        org: 'Syndicat Underground des E-Boys',
+      homo: {
+        headerEmoji: '🌈',
+        org: 'Haut Conseil Arc-en-Ciel',
         title: 'Certificat Officiel',
-        subtitle: 'd\'E-Boy Certifié',
-        sealEmoji: '⛓️',
-        clause: (n1) => `est officiellement reconnu(e) comme <strong>E-Boy d'Élite</strong>, certifié(e) pour ses compétences en esthétique alternative, chaînes en métal et regards sombres vers la caméra.`,
-        duties: 'Ses devoirs : maîtriser le sous-pull à rayures · écouter du post-punk/cloud-rap à 3h du matin · faire des têtes de cœur brisé TikTok irréprochables.',
-        sig1: 'Le Sad Boy Suprême',
-        sig1Title: 'Présidence Cyber-Goth',
-        sig2: 'Ministère des Rayures',
-        prefix: 'EBY'
+        subtitle: (gender) => gender === 'f' ? 'd\'Homosexuelle Certifiée' : 'd\'Homosexuel Certifié',
+        sealEmoji: '👑',
+        clause: (n1, n2, gender) => gender === 'f' 
+          ? `est officiellement reconnu(e) comme <strong>Homosexuelle Maître</strong>, élevée aux plus hautes distinctions du style et de la fabulosité.`
+          : `est officiellement reconnu(e) comme <strong>Homosexuel Maître</strong>, élevé aux plus hautes distinctions du style et de la fabulosité.`,
+        duties: 'Ses devoirs : rayonner en toutes circonstances · assumer sa fabulosité suprême · ne jamais manquer d\'élégance.',
+        sig1: 'Le Haut Conseil',
+        sig1Title: 'Présidence Rainbow',
+        sig2: 'Ministère du Style',
+        prefix: 'HOM'
       },
       femboy: {
         headerEmoji: '🎀',
@@ -532,16 +543,16 @@
       },
       furry: {
         headerEmoji: '🦊',
-        org: 'Fédération Internationale du Fandom Furry',
+        org: 'Ordre Suprême du Furry Kingdom',
         title: 'Certificat Officiel',
         subtitle: 'de Furry Certifié(e)',
-        sealEmoji: '🐾',
-        clause: (n1) => `est officiellement reconnu(e) comme membre émérite du <strong>Fandom Furry</strong>, intronisé(e) avec tous les honneurs et boops sur le nez autorisés.`,
-        duties: 'Ses devoirs : respecter la fursona de chacun · distribuer des câlins lors des conventions · assumer le mot "UwU" en toute circonstance.',
-        sig1: 'Le Grand Renard',
-        sig1Title: 'Conseil des Fursonas',
-        sig2: 'Ministère des Coussinets',
-        prefix: 'FRY'
+        sealEmoji: '✨',
+        clause: (n1) => `est officiellement reconnu(e) comme <strong>Furry Officiel</strong>, certifié(e) pour son fursona unique, sa créativité et son amour du fluff.`,
+        duties: 'Ses devoirs : assumer fièrement son fursona · distribuer des câlins moelleux · prendre soin de la communauté fluff.',
+        sig1: 'Le Haut Alpha',
+        sig1Title: 'Présidence Furry',
+        sig2: 'Ministère du Fluff',
+        prefix: 'FUR'
       },
       bromance: {
         headerEmoji: '💖',
@@ -600,18 +611,27 @@
     function toggleInputs() {
       const type = document.getElementById('cert-type').value;
       const group2 = document.getElementById('group-name2');
+      const groupGender = document.getElementById('group-gender');
       const label1 = document.getElementById('label-name1');
       const customFields = document.getElementById('custom-fields');
 
-      if (type === 'bromance') {
+      if (type === 'homo') {
+        groupGender.style.display = 'flex';
+        group2.style.display = 'none';
+        label1.textContent = 'Nom / Prénom';
+        customFields.style.display = 'none';
+      } else if (type === 'bromance') {
+        groupGender.style.display = 'none';
         group2.style.display = 'flex';
         label1.textContent = 'Premier Nom';
         customFields.style.display = 'none';
       } else if (type === 'custom') {
+        groupGender.style.display = 'none';
         group2.style.display = 'none';
         label1.textContent = 'Nom du Titulaire';
         customFields.style.display = 'flex';
       } else {
+        groupGender.style.display = 'none';
         group2.style.display = 'none';
         label1.textContent = 'Nom / Prénom';
         customFields.style.display = 'none';
@@ -622,6 +642,7 @@
       const type = document.getElementById('cert-type').value;
       const name1 = document.getElementById('name1').value.trim();
       const name2 = document.getElementById('name2').value.trim();
+      const gender = document.getElementById('gender-select').value;
 
       if (!name1 || (type === 'bromance' && !name2)) {
         if (!name1) document.getElementById('name1').focus();
@@ -656,12 +677,15 @@
         document.getElementById('header-emoji').textContent = data.headerEmoji;
         document.getElementById('cert-org').textContent = data.org;
         document.getElementById('cert-title').textContent = data.title;
-        document.getElementById('cert-subtitle').textContent = data.subtitle;
+        document.getElementById('cert-subtitle').textContent = typeof data.subtitle === 'function' ? data.subtitle(gender) : data.subtitle;
         document.getElementById('seal-emoji').textContent = data.sealEmoji;
 
         if (type === 'bromance') {
           document.getElementById('display-name').textContent = `${name1} & ${name2}`;
           document.getElementById('cert-clause').innerHTML = data.clause(name1, name2);
+        } else if (type === 'homo') {
+          document.getElementById('display-name').textContent = name1;
+          document.getElementById('cert-clause').innerHTML = data.clause(name1, null, gender);
         } else {
           document.getElementById('display-name').textContent = name1;
           document.getElementById('cert-clause').innerHTML = data.clause(name1);
@@ -683,7 +707,7 @@
       output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       // Mise à jour de l'URL
-      const params = new URLSearchParams({ type, n1: name1, n2: name2 });
+      const params = new URLSearchParams({ type, n1: name1, n2: name2, g: gender });
       window.history.replaceState({}, '', '?' + params.toString());
     }
 
@@ -709,7 +733,11 @@
         navigator.share(shareData).catch(() => {});
       } else {
         navigator.clipboard.writeText(window.location.href);
-        alert('Lien du certificat copié dans le presse-papier !');
+        const msg = document.createElement('div');
+        msg.textContent = 'Lien du certificat copié dans le presse-papier !';
+        msg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#c9a055;color:#1a1206;padding:10px 20px;border-radius:6px;font-weight:bold;z-index:9999;';
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2500);
       }
     }
 
