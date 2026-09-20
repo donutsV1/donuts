@@ -362,9 +362,10 @@
       <label for="cert-type">Type de certificat</label>
       <select id="cert-type" onchange="toggleInputs()">
         <option value="bro">Adoption de Bro</option>
-        <option value="homo">Homosexuel / Homosexuelle 🌈</option>
-        <option value="femboy">Certificat de Femboy</option>
+        <option value="eboy">Certificat d'E-Boy 🖤</option>
+        <option value="femboy">Certificat de Femboy 🎀</option>
         <option value="tomboy">Certificat de Tomboy 🧢</option>
+        <option value="furry">Certificat de Furry 🦊</option>
         <option value="bromance">Certificat de Bromance (2 Noms)</option>
         <option value="branleur">Certificat de Gros Branleur</option>
         <option value="nerd">Certificat de Gros Nerd</option>
@@ -376,15 +377,6 @@
     <div class="form-group" id="group-name1">
       <label for="name1" id="label-name1">Nom / Prénom</label>
       <input type="text" id="name1" placeholder="Ex: Alex" maxlength="30" />
-    </div>
-
-    <!-- Option genre si "Homosexuel / Homosexuelle" est sélectionné -->
-    <div class="form-group" id="group-gender" style="display: none;">
-      <label for="gender-select">Genre / Intitulé</label>
-      <select id="gender-select">
-        <option value="m">Homosexuel 👑</option>
-        <option value="f">Homosexuelle ✨</option>
-      </select>
     </div>
 
     <div class="form-group" id="group-name2" style="display: none;">
@@ -416,7 +408,7 @@
       </div>
       <div class="form-group">
         <label for="custom-emoji">Émoji du Sceau</label>
-        <input type="text" id="custom-emoji" placeholder="Ex: 👑" maxlength="4" />
+        <input type="text" id="custom-emoji" placeholder="Ex: ⭐" maxlength="4" />
       </div>
     </div>
 
@@ -499,20 +491,18 @@
         sig2: 'Ministère du Bro',
         prefix: 'BRO'
       },
-      homo: {
-        headerEmoji: '🌈',
-        org: 'Haut Conseil Arc-en-Ciel',
+      eboy: {
+        headerEmoji: '🖤',
+        org: 'Syndicat Underground des E-Boys',
         title: 'Certificat Officiel',
-        subtitle: (gender) => gender === 'f' ? 'd\'Homosexuelle Certifiée' : 'd\'Homosexuel Certifié',
-        sealEmoji: '👑',
-        clause: (n1, n2, gender) => gender === 'f' 
-          ? `est officiellement reconnu(e) comme <strong>Homosexuelle Maître</strong>, élevée aux plus hautes distinctions du style et de la fabulosité.`
-          : `est officiellement reconnu(e) comme <strong>Homosexuel Maître</strong>, élevé aux plus hautes distinctions du style et de la fabulosité.`,
-        duties: 'Ses devoirs : rayonner en toutes circonstances · assumer sa fabulosité suprême · ne jamais manquer d\'élégance.',
-        sig1: 'Le Haut Conseil',
-        sig1Title: 'Présidence Rainbow',
-        sig2: 'Ministère du Style',
-        prefix: 'HOM'
+        subtitle: 'd\'E-Boy Certifié',
+        sealEmoji: '⛓️',
+        clause: (n1) => `est officiellement reconnu(e) comme <strong>E-Boy d'Élite</strong>, certifié(e) pour ses compétences en esthétique alternative, chaînes en métal et regards sombres vers la caméra.`,
+        duties: 'Ses devoirs : maîtriser le sous-pull à rayures · écouter du post-punk/cloud-rap à 3h du matin · faire des têtes de cœur brisé TikTok irréprochables.',
+        sig1: 'Le Sad Boy Suprême',
+        sig1Title: 'Présidence Cyber-Goth',
+        sig2: 'Ministère des Rayures',
+        prefix: 'EBY'
       },
       femboy: {
         headerEmoji: '🎀',
@@ -539,6 +529,19 @@
         sig1Title: 'Présidence Tomboy',
         sig2: 'Ministère du Chill',
         prefix: 'TMB'
+      },
+      furry: {
+        headerEmoji: '🦊',
+        org: 'Fédération Internationale du Fandom Furry',
+        title: 'Certificat Officiel',
+        subtitle: 'de Furry Certifié(e)',
+        sealEmoji: '🐾',
+        clause: (n1) => `est officiellement reconnu(e) comme membre émérite du <strong>Fandom Furry</strong>, intronisé(e) avec tous les honneurs et boops sur le nez autorisés.`,
+        duties: 'Ses devoirs : respecter la fursona de chacun · distribuer des câlins lors des conventions · assumer le mot "UwU" en toute circonstance.',
+        sig1: 'Le Grand Renard',
+        sig1Title: 'Conseil des Fursonas',
+        sig2: 'Ministère des Coussinets',
+        prefix: 'FRY'
       },
       bromance: {
         headerEmoji: '💖',
@@ -597,27 +600,18 @@
     function toggleInputs() {
       const type = document.getElementById('cert-type').value;
       const group2 = document.getElementById('group-name2');
-      const groupGender = document.getElementById('group-gender');
       const label1 = document.getElementById('label-name1');
       const customFields = document.getElementById('custom-fields');
 
-      if (type === 'homo') {
-        groupGender.style.display = 'flex';
-        group2.style.display = 'none';
-        label1.textContent = 'Nom / Prénom';
-        customFields.style.display = 'none';
-      } else if (type === 'bromance') {
-        groupGender.style.display = 'none';
+      if (type === 'bromance') {
         group2.style.display = 'flex';
         label1.textContent = 'Premier Nom';
         customFields.style.display = 'none';
       } else if (type === 'custom') {
-        groupGender.style.display = 'none';
         group2.style.display = 'none';
         label1.textContent = 'Nom du Titulaire';
         customFields.style.display = 'flex';
       } else {
-        groupGender.style.display = 'none';
         group2.style.display = 'none';
         label1.textContent = 'Nom / Prénom';
         customFields.style.display = 'none';
@@ -628,7 +622,6 @@
       const type = document.getElementById('cert-type').value;
       const name1 = document.getElementById('name1').value.trim();
       const name2 = document.getElementById('name2').value.trim();
-      const gender = document.getElementById('gender-select').value;
 
       if (!name1 || (type === 'bromance' && !name2)) {
         if (!name1) document.getElementById('name1').focus();
@@ -663,15 +656,12 @@
         document.getElementById('header-emoji').textContent = data.headerEmoji;
         document.getElementById('cert-org').textContent = data.org;
         document.getElementById('cert-title').textContent = data.title;
-        document.getElementById('cert-subtitle').textContent = typeof data.subtitle === 'function' ? data.subtitle(gender) : data.subtitle;
+        document.getElementById('cert-subtitle').textContent = data.subtitle;
         document.getElementById('seal-emoji').textContent = data.sealEmoji;
 
         if (type === 'bromance') {
           document.getElementById('display-name').textContent = `${name1} & ${name2}`;
           document.getElementById('cert-clause').innerHTML = data.clause(name1, name2);
-        } else if (type === 'homo') {
-          document.getElementById('display-name').textContent = name1;
-          document.getElementById('cert-clause').innerHTML = data.clause(name1, null, gender);
         } else {
           document.getElementById('display-name').textContent = name1;
           document.getElementById('cert-clause').innerHTML = data.clause(name1);
@@ -693,7 +683,7 @@
       output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       // Mise à jour de l'URL
-      const params = new URLSearchParams({ type, n1: name1, n2: name2, g: gender });
+      const params = new URLSearchParams({ type, n1: name1, n2: name2 });
       window.history.replaceState({}, '', '?' + params.toString());
     }
 
@@ -731,7 +721,6 @@
         toggleInputs();
         document.getElementById('name1').value = params.get('n1');
         if (params.has('n2')) document.getElementById('name2').value = params.get('n2');
-        if (params.has('g')) document.getElementById('gender-select').value = params.get('g');
         generateCert();
       }
     });
