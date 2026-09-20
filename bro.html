@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Certificat d'Adoption de Bro</title>
+  <title>Générateur de Certificats Officiels</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <!-- Script pour capturer le certificat en image PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,7 +28,7 @@
     /* ── PAGE HEADER ── */
     .page-header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
       animation: fadeDown 0.6s ease both;
     }
 
@@ -50,31 +52,61 @@
     /* ── FORM ── */
     .form-zone {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 12px;
       margin-bottom: 2.5rem;
+      width: 100%;
+      max-width: 520px;
       animation: fadeDown 0.7s ease both;
     }
 
-    .form-zone input {
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      color: #c9a055;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-zone input, .form-zone select, .form-zone textarea {
       font-family: 'Crimson Pro', serif;
-      font-size: 17px;
-      padding: 10px 18px;
+      font-size: 16px;
+      padding: 10px 16px;
       border-radius: 6px;
       border: 1.5px solid #7a5c2e;
       background: #2e1f08;
       color: #f0d99a;
       outline: none;
-      width: 260px;
+      width: 100%;
       transition: border-color 0.2s;
     }
 
-    .form-zone input::placeholder { color: #7a5c2e; }
-    .form-zone input:focus { border-color: #c9a055; }
+    .form-zone textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .form-zone input::placeholder, .form-zone textarea::placeholder { color: #7a5c2e; }
+    .form-zone input:focus, .form-zone select:focus, .form-zone textarea:focus { border-color: #c9a055; }
+
+    .custom-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 2px solid #7a5c2e;
+      padding-left: 14px;
+      margin-top: 6px;
+    }
 
     .form-zone button {
       font-family: 'Playfair Display', serif;
-      font-size: 15px;
-      padding: 10px 22px;
+      font-size: 16px;
+      padding: 12px 22px;
       border-radius: 6px;
       border: 1.5px solid #c9a055;
       background: #c9a055;
@@ -82,6 +114,7 @@
       cursor: pointer;
       font-weight: 700;
       transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
     }
 
     .form-zone button:hover { background: #e0b86a; }
@@ -92,6 +125,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      width: 100%;
       animation: fadeUp 0.5s ease both;
     }
 
@@ -117,7 +151,6 @@
       pointer-events: none;
     }
 
-    /* corners */
     .cert-paper::after {
       content: '✦';
       position: absolute;
@@ -146,7 +179,7 @@
     }
     .cert-title {
       font-family: 'Playfair Display', serif;
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 700;
       color: #2a1f0e;
       line-height: 1.2;
@@ -178,11 +211,11 @@
 
     .cert-name-display {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(32px, 7vw, 48px);
+      font-size: clamp(26px, 6vw, 42px);
       font-style: italic;
       color: #2a1f0e;
       margin: 10px 0 6px;
-      line-height: 1;
+      line-height: 1.1;
     }
 
     .cert-body .clause {
@@ -261,24 +294,32 @@
       margin-top: 1.2rem;
     }
 
-    /* print button */
-    .btn-print {
+    /* action buttons */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
       margin-top: 1.5rem;
+    }
+
+    .btn-action {
       font-family: 'Crimson Pro', serif;
       font-size: 15px;
-      padding: 10px 28px;
+      padding: 10px 20px;
       border-radius: 6px;
       border: 1.5px solid #7a5c2e;
       background: transparent;
       color: #f0d99a;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .btn-print:hover { background: #7a5c2e; color: #fdf8f0; }
+    .btn-action:hover { background: #7a5c2e; color: #fdf8f0; }
+    .btn-action:active { transform: scale(0.97); }
 
     /* animations */
     @keyframes fadeDown {
@@ -297,7 +338,7 @@
         background: white !important;
         padding: 0;
       }
-      .page-header, .form-zone, .btn-print { display: none !important; }
+      .page-header, .form-zone, .action-buttons { display: none !important; }
       #cert-output { display: flex !important; }
       .cert-paper {
         border: 1.5px solid #c9b99a;
@@ -311,14 +352,64 @@
 <body>
 
   <div class="page-header">
-    <span class="emoji">🤝</span>
-    <h1>Bureau Officiel d'Adoption de Bro</h1>
-    <p>Certifié par la République Universelle des Bros depuis 2024</p>
+    <span class="emoji" id="header-emoji">📜</span>
+    <h1>Bureau Officiel des Certificats</h1>
+    <p>Certifié par la République Universelle des Bros & Internautes</p>
   </div>
 
   <div class="form-zone">
-    <input type="text" id="bro-name" placeholder="Prénom du bro..." maxlength="30" />
-    <button onclick="generateCert()">Générer</button>
+    <div class="form-group">
+      <label for="cert-type">Type de certificat</label>
+      <select id="cert-type" onchange="toggleInputs()">
+        <option value="bro">Adoption de Bro</option>
+        <option value="femboy">Certificat de Femboy</option>
+        <option value="bromance">Certificat de Bromance (2 Noms)</option>
+        <option value="branleur">Certificat de Gros Branleur</option>
+        <option value="nerd">Certificat de Gros Nerd</option>
+        <option value="geek">Certificat de Gros Geek</option>
+        <option value="custom">✨ Sur-mesure (Personnalisé)</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="group-name1">
+      <label for="name1" id="label-name1">Nom / Prénom</label>
+      <input type="text" id="name1" placeholder="Ex: Alex" maxlength="30" />
+    </div>
+
+    <div class="form-group" id="group-name2" style="display: none;">
+      <label for="name2">Deuxième Nom (Partenaire de Bromance)</label>
+      <input type="text" id="name2" placeholder="Ex: Sam" maxlength="30" />
+    </div>
+
+    <!-- Champs personnalisés si mode "custom" -->
+    <div class="custom-fields" id="custom-fields" style="display: none;">
+      <div class="form-group">
+        <label for="custom-org">Organisation / Institution</label>
+        <input type="text" id="custom-org" placeholder="Ex: Ordre Suprême du Chilling" maxlength="50" />
+      </div>
+      <div class="form-group">
+        <label for="custom-title">Titre du Certificat</label>
+        <input type="text" id="custom-title" placeholder="Ex: Certificat de BG Officiel" maxlength="40" />
+      </div>
+      <div class="form-group">
+        <label for="custom-subtitle">Sous-titre</label>
+        <input type="text" id="custom-subtitle" placeholder="Ex: Mention Très Honorable" maxlength="40" />
+      </div>
+      <div class="form-group">
+        <label for="custom-clause">Texte / Clause principale</label>
+        <textarea id="custom-clause" placeholder="Ex: est officiellement reconnu(e) comme le plus grand mangeur de kebab de la région."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="custom-duties">Devoirs / Règlements</label>
+        <input type="text" id="custom-duties" placeholder="Ex: Devoirs : Toujours régaler le vendredi · Ne jamais refuser une frite." />
+      </div>
+      <div class="form-group">
+        <label for="custom-emoji">Émoji du Sceau</label>
+        <input type="text" id="custom-emoji" placeholder="Ex: 👑" maxlength="4" />
+      </div>
+    </div>
+
+    <button onclick="generateCert()">Générer le certificat</button>
   </div>
 
   <div id="cert-output">
@@ -326,9 +417,9 @@
       <span class="corner-br">✦</span>
 
       <div class="cert-header">
-        <div class="cert-org">République Universelle des Bros</div>
-        <div class="cert-title">Certificat d'Adoption</div>
-        <div class="cert-subtitle">de Bro Officiel</div>
+        <div class="cert-org" id="cert-org">République Universelle des Bros</div>
+        <div class="cert-title" id="cert-title">Certificat d'Adoption</div>
+        <div class="cert-subtitle" id="cert-subtitle">de Bro Officiel</div>
       </div>
 
       <div class="cert-divider">✦ ✦ ✦</div>
@@ -336,33 +427,31 @@
       <div class="cert-body">
         <div class="intro">Le présent acte certifie solennellement que</div>
         <div class="cert-name-display" id="display-name">–</div>
-        <div class="clause">
-          est désormais reconnu(e) comme <strong>Bro Officiel</strong> au sein de la Confrérie Universelle des Bros,
-          avec tous les droits, avantages et dabs qui s'y rattachent.
+        <div class="clause" id="cert-clause">
+          est désormais reconnu(e) comme Bro Officiel au sein de la Confrérie.
         </div>
-        <div class="duties">
-          Ses devoirs : être là dans les galères &nbsp;·&nbsp; prêter son chargeur sans rechigner &nbsp;·&nbsp;
-          ne jamais juger les choix douteux &nbsp;·&nbsp; répondre "Ouéé frère" en toutes circonstances.
+        <div class="duties" id="cert-duties">
+          Ses devoirs : être là dans les galères · prêter son chargeur sans rechigner · ne jamais juger.
         </div>
       </div>
 
       <div class="cert-footer">
         <div class="cert-footer-section">
           <div class="sig-line"></div>
-          <div class="sig-name">Big Bro Suprême</div>
-          <div>Président des Bros</div>
+          <div class="sig-name" id="sig1-name">Big Bro Suprême</div>
+          <div id="sig1-title">Président des Bros</div>
         </div>
 
         <div class="cert-seal">
           <div class="seal-circle">
-            <div class="seal-emoji">🤝</div>
+            <div class="seal-emoji" id="seal-emoji">🤝</div>
           </div>
           <div class="seal-text">Sceau officiel</div>
         </div>
 
         <div class="cert-footer-section">
           <div class="sig-line"></div>
-          <div class="sig-name">Ministère du Bro</div>
+          <div class="sig-name" id="sig2-name">Ministère du Bro</div>
           <div id="cert-date">—</div>
         </div>
       </div>
@@ -370,35 +459,228 @@
       <div class="cert-number" id="cert-number">N° —</div>
     </div>
 
-    <button class="btn-print" onclick="window.print()">
-      🖨️ Imprimer / Sauvegarder en PDF
-    </button>
+    <!-- BOUTONS D'ACTION SÉPARÉS -->
+    <div class="action-buttons">
+      <button class="btn-action" onclick="downloadPNG()">
+        📥 Télécharger (.PNG)
+      </button>
+      <button class="btn-action" onclick="window.print()">
+        🖨️ Imprimer / PDF
+      </button>
+      <button class="btn-action" onclick="shareCert()">
+        🔗 Partager le lien
+      </button>
+    </div>
   </div>
 
   <script>
+    const CERT_DATA = {
+      bro: {
+        headerEmoji: '🤝',
+        org: 'République Universelle des Bros',
+        title: 'Certificat d\'Adoption',
+        subtitle: 'de Bro Officiel',
+        sealEmoji: '🤝',
+        clause: (n1) => `est désormais reconnu(e) comme <strong>Bro Officiel</strong> au sein de la Confrérie Universelle des Bros, avec tous les droits, avantages et dabs qui s'y rattachent.`,
+        duties: 'Ses devoirs : être là dans les galères · prêter son chargeur sans rechigner · ne jamais juger les choix douteux · répondre "Ouéé frère" en toutes circonstances.',
+        sig1: 'Big Bro Suprême',
+        sig1Title: 'Président des Bros',
+        sig2: 'Ministère du Bro',
+        prefix: 'BRO'
+      },
+      femboy: {
+        headerEmoji: '🎀',
+        org: 'Haut Conseil des Cute Boys',
+        title: 'Certificat Officiel',
+        subtitle: 'de Femboy Certifié',
+        sealEmoji: '✨',
+        clause: (n1) => `est officiellement élevé(e) au rang suprême de <strong>Femboy Officiel</strong>, reconnu(e) pour sa mignonnerie légendaire et son style irréprochable.`,
+        duties: 'Ses devoirs : porter des chaussettes hautes · faire des "uwu" avec modération · dominer le monde en restant totalement cute.',
+        sig1: 'Le Grand Conseil',
+        sig1Title: 'Présidence Cute',
+        sig2: 'Ministère de la Douceur',
+        prefix: 'FMB'
+      },
+      bromance: {
+        headerEmoji: '💖',
+        org: 'Union Sacrée de la Bromance',
+        title: 'Certificat de Bromance',
+        subtitle: 'Lien Fraternel Incassable',
+        sealEmoji: '👩‍❤️‍👨',
+        clause: (n1, n2) => `atteste solennellement que <strong>${n1}</strong> et <strong>${n2}</strong> sont désormais unis par un pacte sacré de <strong>Bromance Eternelle</strong>.`,
+        duties: 'Devoirs mutuels : s\'envoyer des mèmes à 3h du matin · ne jamais laisser l\'autre seul en soirée · être le meilleur duo du serveur.',
+        sig1: 'L\'Ordre des Duo',
+        sig1Title: 'Grand Master Bromance',
+        sig2: 'Ministère des Bros',
+        prefix: 'BRM'
+      },
+      branleur: {
+        headerEmoji: '🦥',
+        org: 'Fédération Internationale de la Flemmardise',
+        title: 'Certificat d\'Excellence',
+        subtitle: 'de Gros Branleur Professionnel',
+        sealEmoji: '🛋️',
+        clause: (n1) => `est officiellement reconnu(e) comme <strong>Gros Branleur Certifié</strong>, ayant passé l'art de ne strictly rien faire au niveau de chef-d'œuvre.`,
+        duties: 'Ses devoirs : repousser à demain ce qu\'il pouvait faire hier · faire la sieste après la sieste · répondre "flemme" à toute proposition.',
+        sig1: 'Le Roi du Canape',
+        sig1Title: 'Président du Rien-Faire',
+        sig2: 'Bureau de la Procrastination',
+        prefix: 'BRN'
+      },
+      nerd: {
+        headerEmoji: '🤓',
+        org: 'Académie Supérieure du Savoir Inutile',
+        title: 'Certificat d\'Excellence',
+        subtitle: 'de Gros Nerd Certifié',
+        sealEmoji: '📚',
+        clause: (n1) => `est déclaré(e) officiellement <strong>Gros Nerd d'Élite</strong>, reconnu(e) pour ses explications non sollicitées de 45 minutes sur des sujets de niche.`,
+        duties: 'Devoirs : corriger la grammaire des gens · connaître le lore complet de sujets obscurs · dire "en fait, techniquement..." à chaque débat.',
+        sig1: 'Professeur Wikipedia',
+        sig1Title: 'Doyen de l\'Explication',
+        sig2: 'Institut du Correctionnisme',
+        prefix: 'NRD'
+      },
+      geek: {
+        headerEmoji: '🎮',
+        org: 'Fédération Internationale des Joueurs',
+        title: 'Certificat de Maîtrise',
+        subtitle: 'de Gros Geek d\'Élite',
+        sealEmoji: '🕹️',
+        clause: (n1) => `est officiellement reconnu(e) comme <strong>Gros Geek Maître</strong>, ayant accumulé un temps de jeu supérieur à toute activité sociale.`,
+        duties: 'Devoirs : optimiser chaque build à 100% · blâmer le lag à chaque défaite · refuser de passer les cutscenes.',
+        sig1: 'Le Joueur 1',
+        sig1Title: 'Capitaine de Guilde',
+        sig2: 'Haut Commandement du Rig',
+        prefix: 'GEK'
+      }
+    };
+
+    function toggleInputs() {
+      const type = document.getElementById('cert-type').value;
+      const group2 = document.getElementById('group-name2');
+      const label1 = document.getElementById('label-name1');
+      const customFields = document.getElementById('custom-fields');
+
+      if (type === 'bromance') {
+        group2.style.display = 'flex';
+        label1.textContent = 'Premier Nom';
+        customFields.style.display = 'none';
+      } else if (type === 'custom') {
+        group2.style.display = 'none';
+        label1.textContent = 'Nom du Titulaire';
+        customFields.style.display = 'flex';
+      } else {
+        group2.style.display = 'none';
+        label1.textContent = 'Nom / Prénom';
+        customFields.style.display = 'none';
+      }
+    }
+
     function generateCert() {
-      const name = document.getElementById('bro-name').value.trim();
-      if (!name) {
-        document.getElementById('bro-name').focus();
+      const type = document.getElementById('cert-type').value;
+      const name1 = document.getElementById('name1').value.trim();
+      const name2 = document.getElementById('name2').value.trim();
+
+      if (!name1 || (type === 'bromance' && !name2)) {
+        if (!name1) document.getElementById('name1').focus();
+        else document.getElementById('name2').focus();
         return;
       }
 
-      document.getElementById('display-name').textContent = name;
+      if (type === 'custom') {
+        const org = document.getElementById('custom-org').value.trim() || 'Organisation Officielle';
+        const title = document.getElementById('custom-title').value.trim() || 'Certificat d\'Honneur';
+        const subtitle = document.getElementById('custom-subtitle').value.trim() || 'Attestation Officielle';
+        const clauseText = document.getElementById('custom-clause').value.trim() || 'est désormais reconnu(e) dans son domaine avec tous les honneurs.';
+        const dutiesText = document.getElementById('custom-duties').value.trim() || 'Devoirs : Honorer son titre en toutes circonstances.';
+        const emoji = document.getElementById('custom-emoji').value.trim() || '⭐';
+
+        document.getElementById('header-emoji').textContent = emoji;
+        document.getElementById('cert-org').textContent = org;
+        document.getElementById('cert-title').textContent = title;
+        document.getElementById('cert-subtitle').textContent = subtitle;
+        document.getElementById('seal-emoji').textContent = emoji;
+        document.getElementById('display-name').textContent = name1;
+        document.getElementById('cert-clause').innerHTML = clauseText;
+        document.getElementById('cert-duties').textContent = dutiesText;
+        document.getElementById('sig1-name').textContent = 'Le Président';
+        document.getElementById('sig1-title').textContent = 'Haut Commissaire';
+        document.getElementById('sig2-name').textContent = 'Secrétariat';
+        document.getElementById('cert-number').textContent = 'N° CUST-' + Math.floor(Math.random() * 90000 + 10000);
+
+      } else {
+        const data = CERT_DATA[type];
+
+        document.getElementById('header-emoji').textContent = data.headerEmoji;
+        document.getElementById('cert-org').textContent = data.org;
+        document.getElementById('cert-title').textContent = data.title;
+        document.getElementById('cert-subtitle').textContent = data.subtitle;
+        document.getElementById('seal-emoji').textContent = data.sealEmoji;
+
+        if (type === 'bromance') {
+          document.getElementById('display-name').textContent = `${name1} & ${name2}`;
+          document.getElementById('cert-clause').innerHTML = data.clause(name1, name2);
+        } else {
+          document.getElementById('display-name').textContent = name1;
+          document.getElementById('cert-clause').innerHTML = data.clause(name1);
+        }
+
+        document.getElementById('cert-duties').textContent = data.duties;
+        document.getElementById('sig1-name').textContent = data.sig1;
+        document.getElementById('sig1-title').textContent = data.sig1Title;
+        document.getElementById('sig2-name').textContent = data.sig2;
+        document.getElementById('cert-number').textContent = 'N° ' + data.prefix + '-' + Math.floor(Math.random() * 90000 + 10000);
+      }
 
       const now = new Date();
       const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
       document.getElementById('cert-date').textContent = dateStr;
 
-      const num = 'BRO-' + Math.floor(Math.random() * 90000 + 10000);
-      document.getElementById('cert-number').textContent = 'N° ' + num;
-
       const output = document.getElementById('cert-output');
       output.classList.add('visible');
       output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Mise à jour de l'URL
+      const params = new URLSearchParams({ type, n1: name1, n2: name2 });
+      window.history.replaceState({}, '', '?' + params.toString());
     }
 
-    document.getElementById('bro-name').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') generateCert();
+    /* Téléchargement sous forme d'image PNG */
+    function downloadPNG() {
+      const certElement = document.getElementById('cert-paper');
+      html2canvas(certElement, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'certificat.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    function shareCert() {
+      const shareData = {
+        title: 'Certificat Officiel',
+        text: 'Regarde ce certificat officiel !',
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Lien du certificat copié dans le presse-papier !');
+      }
+    }
+
+    // Charger les paramètres depuis l'URL si partagé
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('type') && params.has('n1')) {
+        document.getElementById('cert-type').value = params.get('type');
+        toggleInputs();
+        document.getElementById('name1').value = params.get('n1');
+        if (params.has('n2')) document.getElementById('name2').value = params.get('n2');
+        generateCert();
+      }
     });
   </script>
 
