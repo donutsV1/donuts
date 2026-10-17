@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créateur de Fiche de Personnage JDR</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #bb86fc;
+            --accent-hover: #3700b3;
+            --error-color: #cf6679;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        legend {
+            color: var(--accent-color);
+            font-weight: bold;
+            padding: 0 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: #2c2c2c;
+            color: white;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            background: #252525;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .stat-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button.stat-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.stat-btn:hover {
+            background-color: var(--accent-color);
+            color: black;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: #121212;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #9965f4;
+        }
+
+        .info-predilection {
+            font-size: 0.8rem;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        /* Modal de Résultat */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--accent-color);
+        }
+
+        .modal-content h2 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-copier {
+            flex: 1;
+            background-color: #03dac6;
+            color: #121212;
+            border: none;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-copier:hover {
+            background-color: #018786;
+            color: white;
+        }
+
+        .close-btn {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Créateur de Personnage</h1>
+    
+    <div class="form-group">
+        <label for="nom">Nom :</label>
+        <input type="text" id="nom" placeholder="Ex: Ecu de chêne">
+    </div>
+
+    <div class="form-group">
+        <label for="prenom">Prénom :</label>
+        <input type="text" id="prenom" placeholder="Ex: Gimli">
+    </div>
+
+    <div class="form-group">
+        <label for="sexe">Sexe :</label>
+        <select id="sexe">
+            <option value="Homme">Homme</option>
+            <option value="Femme">Femme</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="race">Race :</label>
+        <select id="race" onchange="changerRace()">
+            <option value="Humains">Humains</option>
+            <option value="Le homme chat">Le homme chat</option>
+            <option value="Les elfes">Les elfes</option>
+            <option value="Le nains">Le nains</option>
+            <option value="Le sang mélé">Le sang mélé (Semi-dragon / Semi-lézard)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="classe">Classe :</label>
+        <select id="classe" onchange="changerClasse()">
+            <!-- Généré dynamiquement en JS -->
+        </select>
+        <span id="predilection-info" class="info-predilection"></span>
+    </div>
+
+    <fieldset>
+        <legend>Statistiques</legend>
+        <div class="stats-header">
+            <span id="max-points-label">Points max : 27</span>
+            <span id="points-restants">Restants : 27</span>
+        </div>
+
+        <div id="stats-container">
+            <!-- Généré dynamiquement en JS -->
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Histoire du Personnage</legend>
+        <textarea id="histoire" rows="4" placeholder="Racontez l'histoire de votre personnage..."></textarea>
+    </fieldset>
+
+    <button class="btn-submit" onclick="genererFiche()">Générer la Fiche</button>
+</div>
+
+<!-- Fenêtre modale du résultat -->
+<div id="modal">
+    <div class="modal-content">
+        <h2>Fiche de Personnage</h2>
+        <pre id="modal-body" style="white-space: pre-wrap; background: #252525; padding: 15px; border-radius: 5px; font-family: monospace; color: #fff;"></pre>
+        <div class="modal-buttons">
+            <button class="btn-copier" onclick="copierVersPressePapier()">Copier pour Discord</button>
+            <button class="close-btn" onclick="fermerModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const classesGlobales = {
+        "Guerrier": { desc: "Accessible à tous." },
+        "Archer": { desc: "Tous les nains sont tireurs. Classe de prédilection des elfes." },
+        "Mage": { desc: "Tous sauf les nains. Classe de prédilection des elfes." },
+        "Voleur": { desc: "Accessible aux hommes-chats et autres races autorisées." },
+        "Specialite_Nains": { desc: "Réservé exclusivement aux Nains." },
+        "Paladin": { desc: "Tous sauf les nains. Classe de prédilection des sangs mêlés." }
+    };
+
+    const statsBaseParRace = {
+        "Humains": { pv: 0, force: 0, charisme: 0, dexterite: 0, magie: 0, intelligence: 0 },
+        "Le homme chat": { pv: 0, force: 0, charisme: 2, dexterite: 3, magie: 0, intelligence: 1 },
+        "Les elfes": { pv: 0, force: 0, charisme: 0, dexterite: 1, magie: 4, intelligence: 3 },
+        "Le nains": { pv: 4, force: 0, charisme: 0, dexterite: 2, magie: 0, intelligence: 0 },
+        "Le sang mélé": { pv: 0, force: 3, charisme: 0, dexterite: 1, magie: 3, intelligence: 0 }
+    };
+
+    let statsActuelles = { pv: 0, force: 0, charisme: 0, dexterite: 0, magie: 0, intelligence: 0 };
+
+    function getMaxPoints() {
+        const race = document.getElementById("race").value;
+        return (race === "Le nains") ? 30 : 27;
+    }
+
+    function actualiserClasses() {
+        const race = document.getElementById("race").value;
+        const selectClasse = document.getElementById("classe");
+        selectClasse.innerHTML = "";
+
+        let classesDispo = [];
+
+        if (race === "Le nains") {
+            classesDispo = ["Guerrier", "Archer", "Specialite_Nains"];
+        } else if (race === "Le homme chat") {
+            classesDispo = ["Guerrier", "Archer", "Mage", "Voleur", "Paladin"];
+        } else {
+            classesDispo = ["Guerrier", "Archer", "Mage", "Voleur", "Paladin"];
+        }
+
+        classesDispo.forEach(cls => {
+            let option = document.createElement("option");
+            option.value = cls;
+            if(cls === "Specialite_Nains") option.textContent = "Spécialité Nains (Forgeron/Tank)";
+            else option.textContent = cls;
+            selectClasse.appendChild(option);
+        });
+
+        changerClasse();
+    }
+
+    function changerClasse() {
+        const classe = document.getElementById("classe").value;
+        const info = document.getElementById("predilection-info");
+        if (classesGlobales[classe]) {
+            info.textContent = classesGlobales[classe].desc;
+        }
+    }
+
+    function initialiserStats() {
+        const race = document.getElementById("race").value;
+        const base = statsBaseParRace[race];
+        
+        statsActuelles = { ...base };
+        construireInterfaceStats();
+        verifierPoints();
+    }
+
+    function construireInterfaceStats() {
+        const container = document.getElementById("stats-container");
+        container.innerHTML = "";
+
+        for (let stat in statsActuelles) {
+            let row = document.createElement("div");
+            row.className = "stat-row";
+
+            let label = document.createElement("span");
+            label.textContent = stat.toUpperCase();
+
+            let controls = document.createElement("div");
+            controls.className = "stat-controls";
+
+            let btnMoins = document.createElement("button");
+            btnMoins.className = "stat-btn";
+            btnMoins.textContent = "-";
+            btnMoins.onclick = () => modifierStat(stat, -1);
+
+            let valSpan = document.createElement("span");
+            valSpan.id = `val-${stat}`;
+            valSpan.textContent = statsActuelles[stat];
+            valSpan.style.width = "30px";
+            valSpan.style.textAlign = "center";
+
+            let btnPlus = document.createElement("button");
+            btnPlus.className = "stat-btn";
+            btnPlus.textContent = "+";
+            btnPlus.onclick = () => modifierStat(stat, 1);
+
+            controls.appendChild(btnMoins);
+            controls.appendChild(valSpan);
+            controls.appendChild(btnPlus);
+
+            row.appendChild(label);
+            row.appendChild(controls);
+            container.appendChild(row);
+        }
+    }
+
+    function getTotalStats() {
+        let total = 0;
+        for (let s in statsActuelles) {
+            total += statsActuelles[s];
+        }
+        return total;
+    }
+
+    function verifierPoints() {
+        const max = getMaxPoints();
+        const totalUtilise = getTotalStats();
+        const restants = max - totalUtilise;
+
+        document.getElementById("max-points-label").textContent = `Max points : ${max}`;
+        const lblRestant = document.getElementById("points-restants");
+        lblRestant.textContent = `Restants : ${restants}`;
+
+        if (restants < 0) {
+            lblRestant.style.color = "var(--error-color)";
+        } else {
+            lblRestant.style.color = "var(--text-color)";
+        }
+        return restants;
+    }
+
+    function modifierStat(stat, delta) {
+        const race = document.getElementById("race").value;
+        const minBase = statsBaseParRace[race][stat];
+        const max = getMaxPoints();
+
+        if (delta > 0) {
+            if (getTotalStats() >= max) {
+                alert(`Vous avez atteint la limite maximale de ${max} points !`);
+                return;
+            }
+            statsActuelles[stat]++;
+        } else if (delta < 0) {
+            if (statsActuelles[stat] > minBase) {
+                statsActuelles[stat]--;
+            } else {
+                alert(`Impossible de descendre en dessous du bonus de départ de votre race (${minBase}).`);
+            }
+        }
+
+        document.getElementById(`val-${stat}`).textContent = statsActuelles[stat];
+        verifierPoints();
+    }
+
+    function changerRace() {
+        actualiserClasses();
+        initialiserStats();
+    }
+
+    function genererFiche() {
+        const nom = document.getElementById("nom").value.trim();
+        const prenom = document.getElementById("prenom").value.trim();
+        const sexe = document.getElementById("sexe").value;
+        const race = document.getElementById("race").value;
+        const classe = document.getElementById("classe").value;
+        const histoire = document.getElementById("histoire").value.trim();
+
+        if (!nom || !prenom) {
+            alert("Veuillez renseigner le Nom et le Prénom.");
+            return;
+        }
+
+        const restants = verifierPoints();
+        if (restants < 0) {
+            alert("Vous avez dépassé le nombre de points autorisés !");
+            return;
+        }
+
+        // Formatage stylé avec des caractères spéciaux pour Discord
+        const texteDiscord = 
+`╔══════════════════════════════╗
+       FICHE DE PERSONNAGE      
+╚══════════════════════════════╝
+🔹 **Nom** : ${nom}
+🔹 **Prénom** : ${prenom}
+🔹 **Sexe** : ${sexe}
+🔹 **Race** : ${race}
+🔹 **Classe** : ${classe}
+
+--- ✦ **STATISTIQUES** ✦ ---
+Vous avez ${restants} point(s) de state à répartir dans ses state (${race}) :
+• **Pv** : ${statsActuelles.pv}
+• **Force** : ${statsActuelles.force}
+• **Charisme** : ${statsActuelles.charisme}
+• **Dextérité** : ${statsActuelles.dexterite}
+• **Magie** : ${statsActuelles.magie}
+• **Intelligence** : ${statsActuelles.intelligence}
+
+--- ✦ **HISTOIRE** ✦ ---
+${histoire || "Aucune histoire fournie."}`;
+
+        document.getElementById("modal-body").textContent = texteDiscord;
+        document.getElementById("modal").style.display = "flex";
+    }
+
+    function copierVersPressePapier() {
+        const texte = document.getElementById("modal-body").textContent;
+        navigator.clipboard.writeText(texte).then(() => {
+            alert("Fiche copiée dans le presse-papiers ! Vous pouvez la coller sur Discord.");
+        }).catch(err => {
+            alert("Erreur lors de la copie : " + err);
+        });
+    }
+
+    function fermerModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    window.onload = function() {
+        changerRace();
+    };
+</script>
+
+</body>
+</html>
