@@ -37,7 +37,19 @@
         h1 {
             text-align: center;
             color: var(--accent-color);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+        }
+
+        .import-section {
+            background: #252525;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px dashed var(--accent-color);
+            gap: 10px;
         }
 
         fieldset {
@@ -96,6 +108,16 @@
             border-radius: 6px;
         }
 
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-bonus {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
         .stat-controls {
             display: flex;
             align-items: center;
@@ -142,14 +164,15 @@
             font-style: italic;
         }
 
-        /* Modal de Résultat */
-        #modal {
+        /* Modals */
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8);
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
 
         .modal-content {
@@ -172,31 +195,27 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
-        .btn-copier {
+        .btn-action {
             flex: 1;
-            background-color: #03dac6;
-            color: #121212;
-            border: none;
             padding: 10px;
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
+            border: none;
         }
 
-        .btn-copier:hover {
-            background-color: #018786;
-            color: white;
-        }
+        .btn-copier { background-color: #03dac6; color: #121212; }
+        .btn-copier:hover { background-color: #018786; color: white; }
+
+        .btn-telecharger { background-color: #bb86fc; color: #121212; }
+        .btn-telecharger:hover { background-color: #9965f4; }
 
         .close-btn {
             background-color: var(--error-color);
             color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
             font-weight: bold;
         }
     </style>
@@ -205,6 +224,19 @@
 
 <div class="container">
     <h1>Créateur de Personnage</h1>
+
+    <!-- Section Importation -->
+    <div class="import-section">
+        <div>
+            <strong>Importer une fiche :</strong><br>
+            <span style="font-size: 0.85rem; color: #aaa;">Via un fichier JSON ou du texte brut</span>
+        </div>
+        <div style="display: flex; gap: 5px;">
+            <input type="file" id="input-fichier" accept=".json" onchange="importerFicheJSON(event)" style="display: none;">
+            <button class="btn-action btn-telecharger" onclick="document.getElementById('input-fichier').click()" style="padding: 6px 12px; font-size: 0.9rem;">📂 Fichier JSON</button>
+            <button class="btn-action btn-copier" onclick="ouvrirModalTexte()" style="padding: 6px 12px; font-size: 0.9rem;">📥 Coller Texte</button>
+        </div>
+    </div>
     
     <div class="form-group">
         <label for="nom">Nom :</label>
@@ -246,7 +278,7 @@
     <fieldset>
         <legend>Statistiques</legend>
         <div class="stats-header">
-            <span id="max-points-label">Points max : 27</span>
+            <span id="max-points-label">Points max à distribuer : 27</span>
             <span id="points-restants">Restants : 27</span>
         </div>
 
@@ -263,14 +295,28 @@
     <button class="btn-submit" onclick="genererFiche()">Générer la Fiche</button>
 </div>
 
+<!-- Modal pour coller le texte brut -->
+<div id="modal-texte" class="modal">
+    <div class="modal-content">
+        <h2>Importer depuis du texte</h2>
+        <p style="font-size: 0.85rem; color: #aaa;">Collez le texte de votre fiche de personnage (style Discord) ci-dessous :</p>
+        <textarea id="zone-texte-import" rows="10" style="width: 100%; padding: 10px; background: #252525; color: white; border: 1px solid #444; border-radius: 5px;" placeholder="Collez votre texte ici..."></textarea>
+        <div class="modal-buttons">
+            <button class="btn-action btn-copier" onclick="analyserTexteImporte()">Analyser et Charger</button>
+            <button class="btn-action close-btn" onclick="fermerModalTexte()">Annuler</button>
+        </div>
+    </div>
+</div>
+
 <!-- Fenêtre modale du résultat -->
-<div id="modal">
+<div id="modal-resultat" class="modal">
     <div class="modal-content">
         <h2>Fiche de Personnage</h2>
         <pre id="modal-body" style="white-space: pre-wrap; background: #252525; padding: 15px; border-radius: 5px; font-family: monospace; color: #fff;"></pre>
         <div class="modal-buttons">
-            <button class="btn-copier" onclick="copierVersPressePapier()">Copier pour Discord</button>
-            <button class="close-btn" onclick="fermerModal()">Fermer</button>
+            <button class="btn-action btn-copier" onclick="copierVersPressePapier()">Copier pour Discord</button>
+            <button class="btn-action btn-telecharger" onclick="telechargerJSON()">💾 Télécharger .json</button>
+            <button class="btn-action close-btn" onclick="fermerModalResultat()">Fermer</button>
         </div>
     </div>
 </div>
@@ -293,14 +339,15 @@
         "Le sang mélé": { pv: 0, force: 3, charisme: 0, dexterite: 1, magie: 3, intelligence: 0 }
     };
 
-    let statsActuelles = { pv: 0, force: 0, charisme: 0, dexterite: 0, magie: 0, intelligence: 0 };
+    let pointsInvestis = { pv: 0, force: 0, charisme: 0, dexterite: 0, magie: 0, intelligence: 0 };
+    let personnageActuel = {};
 
     function getMaxPoints() {
         const race = document.getElementById("race").value;
         return (race === "Le nains") ? 30 : 27;
     }
 
-    function actualiserClasses() {
+    function actualiserClasses(classeSelectionnee = null) {
         const race = document.getElementById("race").value;
         const selectClasse = document.getElementById("classe");
         selectClasse.innerHTML = "";
@@ -323,6 +370,10 @@
             selectClasse.appendChild(option);
         });
 
+        if (classeSelectionnee && classesDispo.includes(classeSelectionnee)) {
+            selectClasse.value = classeSelectionnee;
+        }
+
         changerClasse();
     }
 
@@ -334,11 +385,10 @@
         }
     }
 
-    function initialiserStats() {
-        const race = document.getElementById("race").value;
-        const base = statsBaseParRace[race];
-        
-        statsActuelles = { ...base };
+    function initialiserStats(reset = true) {
+        if (reset) {
+            pointsInvestis = { pv: 0, force: 0, charisme: 0, dexterite: 0, magie: 0, intelligence: 0 };
+        }
         construireInterfaceStats();
         verifierPoints();
     }
@@ -346,13 +396,26 @@
     function construireInterfaceStats() {
         const container = document.getElementById("stats-container");
         container.innerHTML = "";
+        const race = document.getElementById("race").value;
+        const bonusRace = statsBaseParRace[race];
 
-        for (let stat in statsActuelles) {
+        for (let stat in pointsInvestis) {
             let row = document.createElement("div");
             row.className = "stat-row";
 
+            let infoDiv = document.createElement("div");
+            infoDiv.className = "stat-info";
+
             let label = document.createElement("span");
             label.textContent = stat.toUpperCase();
+            infoDiv.appendChild(label);
+
+            if (bonusRace[stat] > 0) {
+                let bonusSpan = document.createElement("span");
+                bonusSpan.className = "stat-bonus";
+                bonusSpan.textContent = `(+${bonusRace[stat]} de race)`;
+                infoDiv.appendChild(bonusSpan);
+            }
 
             let controls = document.createElement("div");
             controls.className = "stat-controls";
@@ -364,7 +427,8 @@
 
             let valSpan = document.createElement("span");
             valSpan.id = `val-${stat}`;
-            valSpan.textContent = statsActuelles[stat];
+            let totalStat = bonusRace[stat] + pointsInvestis[stat];
+            valSpan.textContent = totalStat;
             valSpan.style.width = "30px";
             valSpan.style.textAlign = "center";
 
@@ -377,26 +441,26 @@
             controls.appendChild(valSpan);
             controls.appendChild(btnPlus);
 
-            row.appendChild(label);
+            row.appendChild(infoDiv);
             row.appendChild(controls);
             container.appendChild(row);
         }
     }
 
-    function getTotalStats() {
+    function getTotalInvesti() {
         let total = 0;
-        for (let s in statsActuelles) {
-            total += statsActuelles[s];
+        for (let s in pointsInvestis) {
+            total += pointsInvestis[s];
         }
         return total;
     }
 
     function verifierPoints() {
         const max = getMaxPoints();
-        const totalUtilise = getTotalStats();
+        const totalUtilise = getTotalInvesti();
         const restants = max - totalUtilise;
 
-        document.getElementById("max-points-label").textContent = `Max points : ${max}`;
+        document.getElementById("max-points-label").textContent = `Max points à distribuer : ${max}`;
         const lblRestant = document.getElementById("points-restants");
         lblRestant.textContent = `Restants : ${restants}`;
 
@@ -409,31 +473,146 @@
     }
 
     function modifierStat(stat, delta) {
-        const race = document.getElementById("race").value;
-        const minBase = statsBaseParRace[race][stat];
         const max = getMaxPoints();
 
         if (delta > 0) {
-            if (getTotalStats() >= max) {
-                alert(`Vous avez atteint la limite maximale de ${max} points !`);
+            if (getTotalInvesti() >= max) {
+                alert(`Vous avez atteint la limite maximale de ${max} points à distribuer !`);
                 return;
             }
-            statsActuelles[stat]++;
+            pointsInvestis[stat]++;
         } else if (delta < 0) {
-            if (statsActuelles[stat] > minBase) {
-                statsActuelles[stat]--;
+            if (pointsInvestis[stat] > 0) {
+                pointsInvestis[stat]--;
             } else {
-                alert(`Impossible de descendre en dessous du bonus de départ de votre race (${minBase}).`);
+                alert("Vous ne pouvez pas descendre en dessous de 0 point investi.");
             }
         }
 
-        document.getElementById(`val-${stat}`).textContent = statsActuelles[stat];
+        const race = document.getElementById("race").value;
+        const totalStat = statsBaseParRace[race][stat] + pointsInvestis[stat];
+        document.getElementById(`val-${stat}`).textContent = totalStat;
         verifierPoints();
     }
 
     function changerRace() {
         actualiserClasses();
-        initialiserStats();
+        initialiserStats(true);
+    }
+
+    // --- IMPORTATION FICHIER JSON ---
+    function importerFicheJSON(event) {
+        const fichier = event.target.files[0];
+        if (!fichier) return;
+
+        const lecteur = new FileReader();
+        lecteur.onload = function(e) {
+            try {
+                const donnees = JSON.parse(e.target.result);
+                chargerDonneesPersonnage(donnees);
+                alert("Personnage importé avec succès depuis le fichier JSON !");
+            } catch (err) {
+                alert("Erreur lors de la lecture du fichier JSON : " + err);
+            }
+        };
+        lecteur.readAsText(fichier);
+    }
+
+    // --- IMPORTATION DEPUIS DU TEXTE BRUT ---
+    function ouvrirModalTexte() {
+        document.getElementById("modal-texte").style.display = "flex";
+    }
+
+    function fermerModalTexte() {
+        document.getElementById("modal-texte").style.display = "none";
+    }
+
+    function analyserTexteImporte() {
+        const texte = document.getElementById("zone-texte-import").value;
+        if (!texte.trim()) {
+            alert("Veuillez coller du texte.");
+            return;
+        }
+
+        try {
+            const extraireValeur = (regex) => {
+                const match = texte.match(regex);
+                return match ? match[1].trim() : "";
+            };
+
+            const extraireStat = (nomStat) => {
+                // Recherche flexible pour trouver "Stat : valeur" ou "- Stat : valeur"
+                const regex = new RegExp(`(?:•|-)?\\s*\\*?\\*?${nomStat}\\*?\\*?\\s*[:=]\\s*(\\d+)`, "i");
+                const match = texte.match(regex);
+                return match ? parseInt(match[1]) : 0;
+            };
+
+            const nom = extraireValeur(/Nom\s*[:=]\s*([^\n\r]+)/i);
+            const prenom = extraireValeur(/Prénom\s*[:=]\s*([^\n\r]+)/i);
+            const sexe = extraireValeur(/Sexe\s*[:=]\s*([^\n\r]+)/i);
+            let race = extraireValeur(/Race\s*[:=]\s*([^\n\r]+)/i);
+            const classe = extraireValeur(/Classe\s*[:=]\s*([^\n\r]+)/i);
+
+            // Normalisation des noms de races pour correspondre au select
+            const racesDispo = ["Humains", "Le homme chat", "Les elfes", "Le nains", "Le sang mélé"];
+            let raceTrouvee = racesDispo.find(r => r.toLowerCase() === race.toLowerCase()) || "Humains";
+
+            // Récupération des stats totales lues dans le texte
+            const pvTot = extraireStat("Pv");
+            const forceTot = extraireStat("Force");
+            const charismeTot = extraireStat("Charisme");
+            const dexteriteTot = extraireStat("Dextérité");
+            const magieTot = extraireStat("Magi(?:e)?");
+            const intelligenceTot = extraireStat("Intelligence");
+
+            // Extraction de l'histoire
+            let histoire = "";
+            const idxHistoire = texte.indexOf("HISTOIRE");
+            if (idxHistoire !== -1) {
+                let partieHistoire = texte.substring(idxHistoire);
+                let lignes = partieHistoire.split(/[\r\n]+/);
+                lignes.shift(); // Enlever la ligne du titre
+                histoire = lignes.join("\n").trim();
+            }
+
+            const donneesImportees = {
+                nom: nom,
+                prenom: prenom,
+                sexe: sexe || "Homme",
+                race: raceTrouvee,
+                classe: classe || "Guerrier",
+                histoire: histoire,
+                totauxStats: { pv: pvTot, force: forceTot, charisme: charismeTot, dexterite: dexteriteTot, magie: magieTot, intelligence: intelligenceTot }
+            };
+
+            chargerDonneesPersonnage(donneesImportees);
+            fermerModalTexte();
+            alert("Fiche importée avec succès depuis le texte !");
+        } catch (err) {
+            alert("Erreur lors de l'analyse du texte. Vérifiez le format. Erreur : " + err);
+        }
+    }
+
+    function chargerDonneesPersonnage(donnees) {
+        document.getElementById("nom").value = donnees.nom || "";
+        document.getElementById("prenom").value = donnees.prenom || "";
+        document.getElementById("sexe").value = donnees.sexe || "Homme";
+        document.getElementById("race").value = donnees.race || "Humains";
+        
+        actualiserClasses(donnees.classe);
+
+        if (donnees.pointsInvestis) {
+            pointsInvestis = donnees.pointsInvestis;
+        } else if (donnees.totauxStats) {
+            const bonus = statsBaseParRace[donnees.race] || {pv:0, force:0, charisme:0, dexterite:0, magie:0, intelligence:0};
+            for (let s in pointsInvestis) {
+                pointsInvestis[s] = Math.max(0, (donnees.totauxStats[s] || 0) - (bonus[s] || 0));
+            }
+        }
+
+        document.getElementById("histoire").value = donnees.histoire || "";
+        construireInterfaceStats();
+        verifierPoints();
     }
 
     function genererFiche() {
@@ -455,7 +634,24 @@
             return;
         }
 
-        // Formatage stylé avec des caractères spéciaux pour Discord
+        const bonusRace = statsBaseParRace[race];
+
+        const pvTotal = bonusRace.pv + pointsInvestis.pv;
+        const forceTotal = bonusRace.force + pointsInvestis.force;
+        const charismeTotal = bonusRace.charisme + pointsInvestis.charisme;
+        const dexteriteTotal = bonusRace.dexterite + pointsInvestis.dexterite;
+        const magieTotal = bonusRace.magie + pointsInvestis.magie;
+        const intelligenceTotal = bonusRace.intelligence + pointsInvestis.intelligence;
+
+        personnageActuel = {
+            nom, prenom, sexe, race, classe, histoire,
+            pointsInvestis: { ...pointsInvestis },
+            totauxStats: {
+                pv: pvTotal, force: forceTotal, charisme: charismeTotal,
+                dexterite: dexteriteTotal, magie: magieTotal, intelligence: intelligenceTotal
+            }
+        };
+
         const texteDiscord = 
 `╔══════════════════════════════╗
        FICHE DE PERSONNAGE      
@@ -468,18 +664,18 @@
 
 --- ✦ **STATISTIQUES** ✦ ---
 Vous avez ${restants} point(s) de state à répartir dans ses state (${race}) :
-• **Pv** : ${statsActuelles.pv}
-• **Force** : ${statsActuelles.force}
-• **Charisme** : ${statsActuelles.charisme}
-• **Dextérité** : ${statsActuelles.dexterite}
-• **Magie** : ${statsActuelles.magie}
-• **Intelligence** : ${statsActuelles.intelligence}
+• **Pv** : ${pvTotal}
+• **Force** : ${forceTotal}
+• **Charisme** : ${charismeTotal}
+• **Dextérité** : ${dexteriteTotal}
+• **Magie** : ${magieTotal}
+• **Intelligence** : ${intelligenceTotal}
 
 --- ✦ **HISTOIRE** ✦ ---
 ${histoire || "Aucune histoire fournie."}`;
 
         document.getElementById("modal-body").textContent = texteDiscord;
-        document.getElementById("modal").style.display = "flex";
+        document.getElementById("modal-resultat").style.display = "flex";
     }
 
     function copierVersPressePapier() {
@@ -491,8 +687,18 @@ ${histoire || "Aucune histoire fournie."}`;
         });
     }
 
-    function fermerModal() {
-        document.getElementById("modal").style.display = "none";
+    function telechargerJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(personnageActuel, null, 4));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${personnageActuel.prenom}_${personnageActuel.nom}.json`.toLowerCase().replace(/\s+/g, '_'));
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function fermerModalResultat() {
+        document.getElementById("modal-resultat").style.display = "none";
     }
 
     window.onload = function() {
